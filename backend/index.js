@@ -7,6 +7,7 @@ import compression from "compression";
 import cookieParser from "cookie-parser";
 import { connectDB } from "./lib/db.js";
 import authRoutes from "./routes/auth.routes.js"; // ✅ Import routes
+import projectRoutes from "./routes/projectupload.routes.js";
 
 // Load environment variables
 dotenv.config();
@@ -29,6 +30,7 @@ app.get("/", (req, res) => {
 
 // Auth routes (no malformed : in path)
 app.use("/api/auth", authRoutes);
+app.use("/api/projects", projectRoutes);
 
 // Catch-all for unknown routes
 app.all("*", (req, res) => {
