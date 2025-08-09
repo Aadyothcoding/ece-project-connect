@@ -9,7 +9,8 @@ import crypto from "crypto";
  * @desc Signup for both Teacher & Student
  */
 export const signup = async (req, res) => {
-  const { fullName, email, password, role } = req.body;
+  const { fullName, email, password, role, experience, description, researchPast } = req.body;
+
   try {
     if (!fullName || !email || !password || !role) {
       return res.status(400).json({ message: "All fields are required" });
@@ -32,22 +33,22 @@ export const signup = async (req, res) => {
     const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
     const tokenExpires = Date.now() + 24 * 60 * 60 * 1000;
 
-    // Create the user first
     const newUser = await User.create({
       fullName,
       email,
       password: hashedPassword,
       role: role.toLowerCase(),
+      experience,
+      description,
+      researchPast,
       verificationToken: hashedToken,
       tokenExpires,
     });
 
-    // ✅ ADDED: Robust email sending logic
     try {
       await sendVerificationEmail(email, fullName, rawToken);
       await sendWelcomeEmail(email, fullName);
-      
-      // Only send final success response after emails are handled
+
       res.status(201).json({
         _id: newUser._id,
         fullName: newUser.fullName,
@@ -57,10 +58,9 @@ export const signup = async (req, res) => {
       });
     } catch (emailError) {
       console.error("📧 Email sending failed after user creation:", emailError.message);
-      // Let the user know the email failed, but their account was created.
-      // A "resend verification" endpoint would be a good addition later.
+
       res.status(201).json({
-        message: "Account created, but we failed to send a verification email. Please contact support or try logging in to resend.",
+        message: "Account created, but failed to send verification email. Please try resending.",
         user: {
           _id: newUser._id,
           fullName: newUser.fullName,
@@ -74,6 +74,7 @@ export const signup = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 
 /**
  * @desc Forgot password
