@@ -41,6 +41,18 @@ const userSchema = new mongoose.Schema(
       type: String, // stored file URL from cloud storage
       default: "",
     },
+    experience: {
+    type: String,
+    required: false,  // or true if mandatory
+  },
+  description: {
+    type: String,
+    required: false,
+  },
+  researchPast: {    // avoid spaces in key names; use camelCase or underscores
+    type: String,
+    required: false,
+  },
 
     // Email verification fields
     isVerified: {
@@ -58,5 +70,7 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+//experience , description , research past , previous projects, etc. can be added later as needed,
 
 export default mongoose.model("User", userSchema);

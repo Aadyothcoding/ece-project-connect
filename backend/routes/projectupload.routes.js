@@ -8,22 +8,23 @@ import {
   deleteProject,
 } from "../controllers/projectupload.controller.js";
 import { validateProjectData } from "../middlewares/projectupload.middleware.js";
+import { protectRoute } from "../middlewares/auth.middlewares.js";
 
 const router = express.Router();
 
 // POST - create new project
-router.post("/", validateProjectData, createProject);
+router.post("/", protectRoute,validateProjectData, createProject);
 
 // GET - fetch all projects
-router.get("/", getAllProjects);
+router.get("/", protectRoute,getAllProjects);
 
 // GET - fetch single project by ID
-router.get("/:id", getProjectById);
+router.get("/:id", protectRoute,getProjectById);
 
 // PUT - update project
-router.put("/:id", validateProjectData, updateProject);
+router.put("/:id", protectRoute,validateProjectData, updateProject);
 
 // DELETE - delete project
-router.delete("/:id", deleteProject);
+router.delete("/:id", protectRoute,deleteProject);
 
 export default router;
