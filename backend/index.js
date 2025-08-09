@@ -8,6 +8,7 @@ import cookieParser from "cookie-parser";
 import { connectDB } from "./lib/db.js";
 import authRoutes from "./routes/auth.routes.js"; // ✅ Import routes
 import projectRoutes from "./routes/projectupload.routes.js";
+import studentRoutes from "./routes/studentprojectapply.routes.js";
 
 // Load environment variables
 dotenv.config();
@@ -31,7 +32,7 @@ app.get("/", (req, res) => {
 // Auth routes (no malformed : in path)
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
-
+app.use("/api/student", studentRoutes);
 // Catch-all for unknown routes
 app.all("*", (req, res) => {
   res.status(404).json({ message: "Route not found" });
