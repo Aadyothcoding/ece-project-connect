@@ -4,7 +4,6 @@ export const checkProjectCapacity = async (req, res, next) => {
   try {
     const { projectId } = req.body;
 
-    // Count how many students have applied for this project
     const count = await StudentProjectApply.countDocuments({ projectId });
 
     if (count >= 3) {
