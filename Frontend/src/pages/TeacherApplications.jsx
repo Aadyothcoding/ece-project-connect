@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 export default function TeacherApplications() {
     const navigate = useNavigate();
   const { id } = useParams(); // projectId from route
+  console.log(id)
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 

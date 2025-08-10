@@ -6,7 +6,7 @@ import StudentDashboard from "./pages/StudentDahboard.jsx";
 import TeacherDashboard from "./pages/TeacherDashboard.jsx";
 import StudentProfile from "./pages/StudentProfile.jsx";
 import TeacherProfile from "./pages/TeacherProfile.jsx"
-import TeacherApplications from "./pages/TeacherApplications";
+import TeacherApplications from "./pages/TeacherApplications.jsx";
 export default function App() {
   return (
     <Router>
@@ -19,7 +19,7 @@ export default function App() {
         <Route path="/student-profile" element={<StudentProfile />} />
         <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
         <Route path="/teacher-profile" element={<TeacherProfile />} />
-        <Route path="/student/:id" element={<TeacherApplications />} />
+        <Route path="/teacher/applications/:id" element={<TeacherApplications />} />
 
       </Routes>
     </Router>

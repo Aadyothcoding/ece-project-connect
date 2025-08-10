@@ -5,9 +5,10 @@ import {
   deleteProject,
   getCurrentUser,
 } from "../api";
-import { data } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function TeacherDashboard() {
+  const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [newProject, setNewProject] = useState({
     facultyName: "",
