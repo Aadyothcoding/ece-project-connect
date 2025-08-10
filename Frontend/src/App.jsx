@@ -6,7 +6,7 @@ import StudentDashboard from "./pages/StudentDahboard.jsx";
 import TeacherDashboard from "./pages/TeacherDashboard.jsx";
 import StudentProfile from "./pages/StudentProfile.jsx";
 import TeacherProfile from "./pages/TeacherProfile.jsx"
-
+import TeacherApplications from "./pages/TeacherApplications.jsx";
 export default function App() {
   return (
     <Router>
@@ -17,8 +17,9 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/student-dashboard" element={<StudentDashboard />} />
         <Route path="/student-profile" element={<StudentProfile />} />
-         <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
+        <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
         <Route path="/teacher-profile" element={<TeacherProfile />} />
+        <Route path="/teacher/applications/:id" element={<TeacherApplications />} />
 
       </Routes>
     </Router>
