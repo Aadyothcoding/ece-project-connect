@@ -5,6 +5,7 @@ import {
   deleteProject,
   getCurrentUser,
 } from "../api";
+import { data } from "react-router-dom";
 
 export default function TeacherDashboard() {
   const [projects, setProjects] = useState([]);
@@ -37,6 +38,7 @@ export default function TeacherDashboard() {
     getAllProjects()
       .then((res) => setProjects(res.data))
       .catch((err) => console.error(err));
+      
   };
 
   const handleUpload = (e) => {
@@ -68,6 +70,9 @@ export default function TeacherDashboard() {
         console.error(err);
         alert("Failed to delete project.");
       });
+  };
+  const handleViewApplications = (projectId) => {
+    navigate(`/teacher/applications/${projectId}`);
   };
 
   return (
@@ -175,12 +180,21 @@ export default function TeacherDashboard() {
                     <p><strong>Stream:</strong> {p.stream}</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => handleDelete(p._id)}
-                  className="mt-4 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                >
-                  Delete
-                </button>
+
+                <div className="mt-4 flex flex-col gap-2">
+                  <button
+                    onClick={() => handleDelete(p._id)}
+                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                  >
+                    Delete
+                  </button>
+                  <button
+    onClick={() => handleViewApplications(p._id)}
+    className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+  >
+    Student Applications
+  </button>;    
+                </div>
               </div>
             ))}
           </div>
@@ -189,3 +203,4 @@ export default function TeacherDashboard() {
     </div>
   );
 }
+
