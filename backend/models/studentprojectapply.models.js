@@ -8,7 +8,7 @@ const studentProjectApplySchema = new mongoose.Schema(
     },
     studentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Student", // Assuming you have a Student model
+      ref: "User", // <-- Changed to User model
       required: true,
     },
     projectId: {
