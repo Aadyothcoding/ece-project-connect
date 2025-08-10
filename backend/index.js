@@ -6,7 +6,7 @@ import helmet from "helmet";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import { connectDB } from "./lib/db.js";
-import authRoutes from "./routes/auth.routes.js"; // ✅ Import routes
+import authRoutes from "./routes/auth.routes.js";
 import projectRoutes from "./routes/projectupload.routes.js";
 import studentRoutes from "./routes/studentprojectapply.routes.js";
 
@@ -16,10 +16,19 @@ dotenv.config();
 // Initialize Express app
 const app = express();
 
-// Middleware
-app.use(cors());
+// ✅ CORS config for Vite frontend + credentials support
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+// Security & optimization middleware
 app.use(helmet());
 app.use(compression());
+
+// Body parsing
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -29,17 +38,18 @@ app.get("/", (req, res) => {
   res.send("✅ Student-Teacher Project Backend is running.");
 });
 
-// Auth routes (no malformed : in path)
+// API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/student", studentRoutes);
+
 // Catch-all for unknown routes
 app.all("*", (req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3050; // ✅ Default to 3050
 const startServer = async () => {
   try {
     await connectDB();
