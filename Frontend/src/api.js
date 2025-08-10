@@ -21,6 +21,7 @@ export const updateProfile = (data) => API.put("/auth/update-profile", data);
 export const getAllProjects = () => API.get("/projects");
 export const createProject = (data) => API.post("/projects", data);
 export const deleteProject = (id) => API.delete(`/projects/${id}`);
+export const getTeacherProjects = () => API.get("/projects/my-projects");
 
 /* =======================
    STUDENT ROUTES (/api/student)
@@ -28,3 +29,8 @@ export const deleteProject = (id) => API.delete(`/projects/${id}`);
 export const getStudentProfile = (id) => API.get(`/student/${id}`);
 export const updateStudentProfile = (id, data) =>
   API.put(`/student/${id}`, data);
+
+// For the student to apply
+export const applyToProject = (data) => API.post("/student/apply", data);
+// For the teacher to view applicants for a specific project
+export const getApplicationsForProject = (projectId) => API.get(`/student/${projectId}`);

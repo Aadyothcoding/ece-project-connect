@@ -1,4 +1,3 @@
-// frontend/src/pages/TeacherDashboard.jsx
 import React, { useEffect, useState } from "react";
 import {
   getAllProjects,
@@ -10,20 +9,21 @@ import {
 export default function TeacherDashboard() {
   const [projects, setProjects] = useState([]);
   const [newProject, setNewProject] = useState({
-    title: "",
+    facultyName: "",
+    projectTitle: "",
     description: "",
-    skills: "",
-    duration: "",
-    difficulty: "",
+    applicationDeadline: "",
+    stream: "",
   });
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     getCurrentUser()
       .then((res) => {
         setUser(res.data);
         if (res.data.role !== "teacher") {
-          window.location.href = "/student-dashboard"; // redirect if not teacher
+          window.location.href = "/student-dashboard";
         }
       })
       .catch(() => {
@@ -41,49 +41,66 @@ export default function TeacherDashboard() {
 
   const handleUpload = (e) => {
     e.preventDefault();
-    const payload = {
-      ...newProject,
-      skills: newProject.skills.split(",").map((s) => s.trim()), // turn string into array
-    };
-    createProject(payload)
+    setLoading(true);
+    createProject(newProject)
       .then(() => {
         setNewProject({
-          title: "",
+          facultyName: "",
+          projectTitle: "",
           description: "",
-          skills: "",
-          duration: "",
-          difficulty: "",
+          applicationDeadline: "",
+          stream: "",
         });
         loadProjects();
       })
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        console.error(err);
+        alert("Failed to upload project. Please try again.");
+      })
+      .finally(() => setLoading(false));
   };
 
   const handleDelete = (id) => {
+    if (!window.confirm("Are you sure you want to delete this project?")) return;
     deleteProject(id)
       .then(() => loadProjects())
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        console.error(err);
+        alert("Failed to delete project.");
+      });
   };
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      <h1 className="text-2xl font-bold mb-4">Teacher Dashboard</h1>
-      {user && (
-        <p className="text-lg mb-6">
-          Welcome, <span className="font-semibold">{user.fullName}</span>
-        </p>
-      )}
+      <header className="mb-6">
+        <h1 className="text-3xl font-bold">Teacher Dashboard</h1>
+        {user && (
+          <p className="text-lg text-gray-700 mt-1">
+            Welcome, <span className="font-semibold">{user.fullName}</span>
+          </p>
+        )}
+      </header>
 
       {/* Upload Form */}
-      <div className="bg-white p-6 rounded-lg shadow mb-8">
-        <h2 className="text-lg font-semibold mb-4">Upload a New Project</h2>
+      <section className="bg-white p-6 rounded-lg shadow mb-10">
+        <h2 className="text-xl font-semibold mb-4">Upload a New Project</h2>
         <form onSubmit={handleUpload} className="space-y-4">
           <input
             type="text"
-            placeholder="Project Title"
-            value={newProject.title}
+            placeholder="Faculty Name"
+            value={newProject.facultyName}
             onChange={(e) =>
-              setNewProject({ ...newProject, title: e.target.value })
+              setNewProject({ ...newProject, facultyName: e.target.value })
+            }
+            className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+          <input
+            type="text"
+            placeholder="Project Title"
+            value={newProject.projectTitle}
+            onChange={(e) =>
+              setNewProject({ ...newProject, projectTitle: e.target.value })
             }
             className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
@@ -99,85 +116,76 @@ export default function TeacherDashboard() {
             required
           />
           <input
-            type="text"
-            placeholder="Skills (comma separated)"
-            value={newProject.skills}
+            type="date"
+            value={newProject.applicationDeadline}
             onChange={(e) =>
-              setNewProject({ ...newProject, skills: e.target.value })
+              setNewProject({
+                ...newProject,
+                applicationDeadline: e.target.value,
+              })
             }
             className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
           />
-          <div className="flex gap-4">
-            <input
-              type="text"
-              placeholder="Duration"
-              value={newProject.duration}
-              onChange={(e) =>
-                setNewProject({ ...newProject, duration: e.target.value })
-              }
-              className="w-1/2 px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <input
-              type="text"
-              placeholder="Difficulty"
-              value={newProject.difficulty}
-              onChange={(e) =>
-                setNewProject({ ...newProject, difficulty: e.target.value })
-              }
-              className="w-1/2 px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="Stream (e.g. CSE, ECE)"
+            value={newProject.stream}
+            onChange={(e) =>
+              setNewProject({ ...newProject, stream: e.target.value })
+            }
+            className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
           <button
             type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            disabled={loading}
+            className={`${
+              loading ? "bg-blue-300" : "bg-blue-500 hover:bg-blue-600"
+            } text-white px-4 py-2 rounded transition`}
           >
-            Upload Project
+            {loading ? "Uploading..." : "Upload Project"}
           </button>
         </form>
-      </div>
+      </section>
 
       {/* Project List */}
-      <h2 className="text-xl font-semibold mb-4">Your Projects</h2>
-      {projects.length === 0 ? (
-        <p className="text-gray-600">No projects uploaded yet.</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((p) => (
-            <div
-              key={p._id}
-              className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow"
-            >
-              <h3 className="text-lg font-semibold mb-2">{p.title}</h3>
-              <p className="text-sm text-gray-600 mb-4">{p.description}</p>
-
-              {p.skills && p.skills.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {p.skills.map((skill, i) => (
-                    <span
-                      key={i}
-                      className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              <div className="text-xs text-gray-500 mb-4">
-                <p>Duration: {p.duration || "N/A"}</p>
-                <p>Difficulty: {p.difficulty || "N/A"}</p>
-              </div>
-
-              <button
-                onClick={() => handleDelete(p._id)}
-                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+      <section>
+        <h2 className="text-xl font-semibold mb-4">Your Projects</h2>
+        {projects.length === 0 ? (
+          <div className="text-gray-600 bg-white p-6 rounded shadow text-center">
+            No projects uploaded yet. Start by adding one above! 📚
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {projects.map((p) => (
+              <div
+                key={p._id}
+                className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow flex flex-col justify-between"
               >
-                Delete
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">{p.projectTitle}</h3>
+                  <p className="text-sm text-gray-600 mb-4">{p.description}</p>
+                  <div className="text-xs text-gray-500 space-y-1">
+                    <p><strong>Faculty:</strong> {p.facultyName}</p>
+                    <p>
+                      <strong>Deadline:</strong>{" "}
+                      {new Date(p.applicationDeadline).toLocaleDateString()}
+                    </p>
+                    <p><strong>Stream:</strong> {p.stream}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleDelete(p._id)}
+                  className="mt-4 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

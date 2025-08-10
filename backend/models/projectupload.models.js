@@ -1,7 +1,14 @@
+// models/projectupload.model.js
 import mongoose from "mongoose";
 
 const projectSchema = new mongoose.Schema(
   {
+    // ADD THIS FIELD
+    teacherId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User", // This links to your User model
+      required: true,
+    },
     facultyName: {
       type: String,
       required: [true, "Faculty name is required"],
@@ -17,17 +24,13 @@ const projectSchema = new mongoose.Schema(
       required: [true, "Project description is required"],
       trim: true,
     },
-    datePosted: {
-      type: Date,
-      default: Date.now, // Auto-set to current date
-    },
     applicationDeadline: {
       type: Date,
       required: [true, "Application deadline is required"],
     },
     stream: {
       type: String,
-      required: [true, "Stream is required"], // e.g., CSE, ECE, Mechanical
+      required: [true, "Stream is required"],
       trim: true,
     },
   },
