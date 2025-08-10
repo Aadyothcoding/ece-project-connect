@@ -27,7 +27,7 @@ router.post("/reset-password", resetPassword);
 
 // Email verification link
 router.get("/verify", verifyEmail);
-
+router.get("/check-auth", protectRoute, checkAuth);
 // ─── Protected Routes ───────────────────────────────────────────
 
 // Logout

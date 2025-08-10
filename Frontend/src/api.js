@@ -6,16 +6,25 @@ const API = axios.create({
   withCredentials: true,
 });
 
-// Auth
+/* =======================
+   AUTH ROUTES (/api/auth)
+========================= */
 export const signupUser = (data) => API.post("/auth/signup", data);
 export const loginUser = (data) => API.post("/auth/login", data);
 export const forgotPassword = (data) => API.post("/auth/forgot-password", data);
 export const getCurrentUser = () => API.get("/auth/check-auth");
 export const updateProfile = (data) => API.put("/auth/update-profile", data);
 
-// Projects
+/* =======================
+   PROJECT ROUTES (/api/projects)
+========================= */
 export const getAllProjects = () => API.get("/projects");
 export const createProject = (data) => API.post("/projects", data);
 export const deleteProject = (id) => API.delete(`/projects/${id}`);
 
-export default API;
+/* =======================
+   STUDENT ROUTES (/api/student)
+========================= */
+export const getStudentProfile = (id) => API.get(`/student/${id}`);
+export const updateStudentProfile = (id, data) =>
+  API.put(`/student/${id}`, data);

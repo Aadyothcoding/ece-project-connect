@@ -2,7 +2,7 @@ import { useState } from "react";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { loginUser } from "../api";
+import { loginUser, getCurrentUser } from "../api";
 
 export default function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -18,8 +18,20 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
+      // Step 1: Log in the user
       await loginUser(formData);
-      navigate("/dashboard");
+
+      // Step 2: Get the logged-in user's data (including role)
+      const { data } = await getCurrentUser();
+
+      // Step 3: Redirect based on role
+      if (data.role === "teacher") {
+        navigate("/teacher-dashboard");
+      } else if (data.role === "student") {
+        navigate("/student-dashboard");
+      } else {
+        navigate("/"); // fallback
+      }
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     } finally {
