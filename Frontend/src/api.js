@@ -14,6 +14,7 @@ export const loginUser = (data) => API.post("/auth/login", data);
 export const forgotPassword = (data) => API.post("/auth/forgot-password", data);
 export const getCurrentUser = () => API.get("/auth/check-auth");
 export const updateProfile = (data) => API.put("/auth/update-profile", data);
+export const logoutUser = () => API.post("/auth/logout"); // **FIX**: Added the missing logout
 
 /* =======================
    PROJECT ROUTES (/api/projects)
