@@ -1,0 +1,33 @@
+Analog Circuits
+Digital Circuits
+Semiconductor Devices
+Wireless & Mobile Communication
+Fiber-Optic Communication
+Computer Networks
+Digital Signal Processing (DSP)
+Image & Video Processing
+Embedded Systems
+Internet of Things (IoT)
+Electromagnetics & RF Engineering
+Antennas & Wave Propagation
+VLSI (Very Large Scale Integration)
+Control Systems
+Robotics and Automation
+Power Electronics
+Computer Architecture
+Photonics and Optoelectronics
+Information Theory
+Biomedical Engineering
+Quantum Computing
+MEMS (Micro-Electro-Mechanical Systems)
+Machine Learning & AI Hardware
+Signal Integrity and High-Speed Design
+Nanoelectronics
+Terahertz Technology
+Mixed Signal Design
+Automotive Electronics
+Sensor Networks
+Radar Systems
+Satellite Communication
+Cyber-Physical Systems
+Augmented & Virtual Reality Hardware

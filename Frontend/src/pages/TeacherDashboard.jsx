@@ -1,12 +1,12 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from "react";
 import {
   getAllProjects,
   createProject,
   deleteProject,
   getCurrentUser,
   logoutUser,
-} from '../api';
-import { useNavigate } from 'react-router-dom';
+} from "../api";
+import { useNavigate } from "react-router-dom";
 import {
   Plus,
   BookOpen,
@@ -15,8 +15,8 @@ import {
   Loader,
   AlertCircle,
   CheckCircle,
-} from 'lucide-react';
-import Navbar from '../components/Navbar'; // <-- IMPORT NAVBAR
+} from "lucide-react";
+import Navbar from "../components/Navbar"; // <-- IMPORT NAVBAR
 
 // A simple, non-blocking modal for confirmation
 const ConfirmationModal = ({ message, onConfirm, onCancel }) => (
@@ -24,8 +24,18 @@ const ConfirmationModal = ({ message, onConfirm, onCancel }) => (
     <div className="bg-slate-800 rounded-lg p-6 shadow-xl max-w-sm text-center">
       <p className="mb-6">{message}</p>
       <div className="flex justify-center gap-4">
-        <button onClick={onCancel} className="px-4 py-2 bg-slate-600 hover:bg-slate-500 rounded-md">Cancel</button>
-        <button onClick={onConfirm} className="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-md">Confirm</button>
+        <button
+          onClick={onCancel}
+          className="px-4 py-2 bg-slate-600 hover:bg-slate-500 rounded-md"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={onConfirm}
+          className="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-md"
+        >
+          Confirm
+        </button>
       </div>
     </div>
   </div>
@@ -35,21 +45,22 @@ export default function TeacherDashboard() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [newProject, setNewProject] = useState({
-    projectTitle: '',
-    description: '',
-    applicationDeadline: '',
-    stream: '',
+    projectTitle: "",
+    description: "",
+    applicationDeadline: "",
+    stream: "",
+    domain: "",
   });
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  
-  const [notification, setNotification] = useState({ message: '', type: '' });
+
+  const [notification, setNotification] = useState({ message: "", type: "" });
   const [confirmDelete, setConfirmDelete] = useState(null);
 
-  const showNotification = (message, type = 'error') => {
+  const showNotification = (message, type = "error") => {
     setNotification({ message, type });
-    setTimeout(() => setNotification({ message: '', type: '' }), 4000);
+    setTimeout(() => setNotification({ message: "", type: "" }), 4000);
   };
 
   const loadProjectsForCurrentUser = useCallback((currentUser) => {
@@ -63,7 +74,7 @@ export default function TeacherDashboard() {
       })
       .catch((err) => {
         console.error("Error loading projects:", err);
-        showNotification('Could not load your projects.');
+        showNotification("Could not load your projects.");
       })
       .finally(() => setInitialLoading(false));
   }, []);
@@ -72,15 +83,15 @@ export default function TeacherDashboard() {
     getCurrentUser()
       .then((res) => {
         const currentUser = res.data;
-        if (!currentUser || currentUser.role !== 'teacher') {
-          navigate(currentUser ? '/student-dashboard' : '/login');
+        if (!currentUser || currentUser.role !== "teacher") {
+          navigate(currentUser ? "/student-dashboard" : "/login");
           return;
         }
         setUser(currentUser);
         loadProjectsForCurrentUser(currentUser);
       })
       .catch(() => {
-        navigate('/login');
+        navigate("/login");
       });
   }, [navigate, loadProjectsForCurrentUser]);
 
@@ -96,12 +107,19 @@ export default function TeacherDashboard() {
 
     createProject(projectData)
       .then(() => {
-        showNotification('Project uploaded successfully!', 'success');
-        setNewProject({ projectTitle: '', description: '', applicationDeadline: '', stream: '' });
+        showNotification("Project uploaded successfully!", "success");
+        setNewProject({
+          projectTitle: "",
+          description: "",
+          applicationDeadline: "",
+          stream: "",
+        });
         loadProjectsForCurrentUser(user);
       })
       .catch((err) => {
-        showNotification(err.response?.data?.message || 'Failed to upload project.');
+        showNotification(
+          err.response?.data?.message || "Failed to upload project."
+        );
       })
       .finally(() => setLoading(false));
   };
@@ -112,22 +130,23 @@ export default function TeacherDashboard() {
     if (!confirmDelete) return;
     deleteProject(confirmDelete)
       .then(() => {
-        showNotification('Project deleted successfully.', 'success');
+        showNotification("Project deleted successfully.", "success");
         loadProjectsForCurrentUser(user);
       })
-      .catch(() => showNotification('Failed to delete project.'))
+      .catch(() => showNotification("Failed to delete project."))
       .finally(() => setConfirmDelete(null));
   };
 
-  const handleViewApplications = (projectId) => navigate(`/teacher/applications/${projectId}`);
+  const handleViewApplications = (projectId) =>
+    navigate(`/teacher/applications/${projectId}`);
 
   const handleLogout = async () => {
     try {
       await logoutUser();
-      navigate('/login');
+      navigate("/login");
     } catch (error) {
       console.error("Logout failed:", error);
-      navigate('/login');
+      navigate("/login");
     }
   };
 
@@ -142,14 +161,22 @@ export default function TeacherDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-indigo-900 text-white p-4 sm:p-6 lg:p-8 relative">
       {notification.message && (
-        <div className={`fixed top-5 right-5 z-50 flex items-center gap-3 p-4 rounded-lg shadow-lg ${notification.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
-          {notification.type === 'success' ? <CheckCircle className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
+        <div
+          className={`fixed top-5 right-5 z-50 flex items-center gap-3 p-4 rounded-lg shadow-lg ${
+            notification.type === "success" ? "bg-green-600" : "bg-red-600"
+          }`}
+        >
+          {notification.type === "success" ? (
+            <CheckCircle className="w-6 h-6" />
+          ) : (
+            <AlertCircle className="w-6 h-6" />
+          )}
           <span>{notification.message}</span>
         </div>
       )}
 
       {confirmDelete && (
-        <ConfirmationModal 
+        <ConfirmationModal
           message="Are you sure you want to delete this project? This action cannot be undone."
           onConfirm={confirmDeletion}
           onCancel={() => setConfirmDelete(null)}
@@ -168,22 +195,29 @@ export default function TeacherDashboard() {
             <Plus className="w-6 h-6 text-green-400" />
             Upload a New Project
           </h2>
-          <form onSubmit={handleUpload} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <form
+            onSubmit={handleUpload}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          >
             <div className="md:col-span-2">
               <input
                 type="text"
                 placeholder="Project Title"
                 value={newProject.projectTitle}
-                onChange={(e) => setNewProject({ ...newProject, projectTitle: e.target.value })}
+                onChange={(e) =>
+                  setNewProject({ ...newProject, projectTitle: e.target.value })
+                }
                 className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:outline-none transition"
                 required
               />
             </div>
-             <div className="md:col-span-2">
-               <textarea
+            <div className="md:col-span-2">
+              <textarea
                 placeholder="Description"
                 value={newProject.description}
-                onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+                onChange={(e) =>
+                  setNewProject({ ...newProject, description: e.target.value })
+                }
                 className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:outline-none transition"
                 rows={4}
                 required
@@ -193,28 +227,92 @@ export default function TeacherDashboard() {
               type="text"
               placeholder="Stream (e.g. CSE, ECE)"
               value={newProject.stream}
-              onChange={(e) => setNewProject({ ...newProject, stream: e.target.value })}
+              onChange={(e) =>
+                setNewProject({ ...newProject, stream: e.target.value })
+              }
               className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:outline-none transition"
               required
             />
-             <div className="relative">
-              <label htmlFor="deadline" className="text-slate-400 text-xs absolute top-[-10px] left-3 bg-slate-800/50 px-1">Application Deadline</label>
+            <div className="relative">
+              <label
+                htmlFor="deadline"
+                className="text-slate-400 text-xs absolute top-[-10px] left-3 bg-slate-800/50 px-1"
+              >
+                Application Deadline
+              </label>
               <input
                 id="deadline"
                 type="date"
                 value={newProject.applicationDeadline}
-                onChange={(e) => setNewProject({ ...newProject, applicationDeadline: e.target.value })}
+                onChange={(e) =>
+                  setNewProject({
+                    ...newProject,
+                    applicationDeadline: e.target.value,
+                  })
+                }
                 className="w-full bg-slate-700/50 border border-slate-600 rounded-lg pl-4 pr-10 py-2 text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:outline-none transition"
                 required
               />
             </div>
+            <div className="relative">
+              <select
+                value={newProject.domain}
+                onChange={(e) =>
+                  setNewProject({ ...newProject, domain: e.target.value })
+                }
+                className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-purple-500 focus:outline-none transition"
+                required
+              >
+                <option value="">Select Domain</option>
+                <option>Analog Circuits</option>
+                <option>Digital Circuits</option>
+                <option>Semiconductor Devices</option>
+                <option>Wireless & Mobile Communication</option>
+                <option>Fiber-Optic Communication</option>
+                <option>Computer Networks</option>
+                <option>Digital Signal Processing (DSP)</option>
+                <option>Image & Video Processing</option>
+                <option>Embedded Systems</option>
+                <option>Internet of Things (IoT)</option>
+                <option>Electromagnetics & RF Engineering</option>
+                <option>Antennas & Wave Propagation</option>
+                <option>VLSI (Very Large Scale Integration)</option>
+                <option>Control Systems</option>
+                <option>Robotics and Automation</option>
+                <option>Power Electronics</option>
+                <option>Computer Architecture</option>
+                <option>Photonics and Optoelectronics</option>
+                <option>Information Theory</option>
+                <option>Biomedical Engineering</option>
+                <option>Quantum Computing</option>
+                <option>MEMS (Micro-Electro-Mechanical Systems)</option>
+                <option>Machine Learning & AI Hardware</option>
+                <option>Signal Integrity and High-Speed Design</option>
+                <option>Nanoelectronics</option>
+                <option>Terahertz Technology</option>
+                <option>Mixed Signal Design</option>
+                <option>Automotive Electronics</option>
+                <option>Sensor Networks</option>
+                <option>Radar Systems</option>
+                <option>Satellite Communication</option>
+                <option>Cyber-Physical Systems</option>
+                <option>Augmented & Virtual Reality Hardware</option>
+              </select>
+            </div>
+
             <div className="md:col-span-2">
               <button
                 type="submit"
                 disabled={loading}
                 className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-semibold shadow-md transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? <><Loader className="animate-spin w-5 h-5" /> Uploading...</> : 'Upload Project'}
+                {loading ? (
+                  <>
+                    <Loader className="animate-spin w-5 h-5" /> Uploading...
+                  </>
+                ) : (
+                  "Upload Project"
+                )}
               </button>
             </div>
           </form>
@@ -233,20 +331,49 @@ export default function TeacherDashboard() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {projects.map((p) => (
-                <div key={p._id} className="bg-slate-800/40 backdrop-blur-md border border-slate-700 rounded-2xl p-6 shadow-lg hover:border-purple-500 transition-all duration-300 flex flex-col justify-between">
+                <div
+                  key={p._id}
+                  className="bg-slate-800/40 backdrop-blur-md border border-slate-700 rounded-2xl p-6 shadow-lg hover:border-purple-500 transition-all duration-300 flex flex-col justify-between"
+                >
                   <div>
-                    <h3 className="text-xl font-bold mb-2 text-white">{p.projectTitle}</h3>
-                    <p className="text-sm text-slate-300 mb-4 h-20 overflow-y-auto">{p.description}</p>
+                    <button
+                      onClick={() =>
+                        navigate(`/teacher/update-project/${p._id}`)
+                      }
+                      className="ml-auto flex items-center justify-center gap-2 text-sm bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white px-3 py-2 rounded-md font-semibold transition"
+                    >
+                      ✏️ Edit
+                    </button>
+                    <h3 className="text-xl font-bold mb-2 text-white">
+                      {p.projectTitle}
+                    </h3>
+                    <p className="text-sm text-slate-300 mb-4 h-20 overflow-y-auto">
+                      {p.description}
+                    </p>
                     <div className="text-xs text-slate-400 space-y-2 border-t border-slate-700 pt-3 mt-3">
-                      <p><strong>Stream:</strong> {p.stream}</p>
-                      <p><strong>Deadline:</strong> {new Date(p.applicationDeadline).toLocaleDateString()}</p>
+                      <p>
+                        <strong>Stream:</strong> {p.stream}
+                      </p>
+                      <p>
+                        <strong>Domain:</strong> {p.domain}
+                      </p>
+                      <p>
+                        <strong>Deadline:</strong>{" "}
+                        {new Date(p.applicationDeadline).toLocaleDateString()}
+                      </p>
                     </div>
                   </div>
                   <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                    <button onClick={() => handleViewApplications(p._id)} className="flex-1 flex items-center justify-center gap-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-3 py-2 rounded-md font-semibold transition">
+                    <button
+                      onClick={() => handleViewApplications(p._id)}
+                      className="flex-1 flex items-center justify-center gap-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-3 py-2 rounded-md font-semibold transition"
+                    >
                       <Users className="w-4 h-4" /> Applications
                     </button>
-                    <button onClick={() => handleDeleteClick(p._id)} className="flex-1 flex items-center justify-center gap-2 text-sm bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white px-3 py-2 rounded-md font-semibold transition">
+                    <button
+                      onClick={() => handleDeleteClick(p._id)}
+                      className="flex-1 flex items-center justify-center gap-2 text-sm bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white px-3 py-2 rounded-md font-semibold transition"
+                    >
                       <Trash2 className="w-4 h-4" /> Delete
                     </button>
                   </div>

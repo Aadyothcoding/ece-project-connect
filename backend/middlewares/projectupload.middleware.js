@@ -6,6 +6,7 @@ export const validateProjectData = (req, res, next) => {
     description,
     applicationDeadline,
     stream,
+    domain,
   } = req.body;
 
   if (
@@ -13,7 +14,8 @@ export const validateProjectData = (req, res, next) => {
     !projectTitle ||
     !description ||
     !applicationDeadline ||
-    !stream
+    !stream ||
+    !domain
   ) {
     return res.status(400).json({ message: "All fields are required" });
   }

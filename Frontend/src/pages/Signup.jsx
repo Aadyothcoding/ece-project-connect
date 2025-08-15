@@ -38,6 +38,9 @@ export default function Signup() {
         onSubmit={handleSubmit}
         className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md space-y-4"
       >
+        <h1 className="text-3xl font-bold text-center text-blue-600 mb-2">
+          Project Connect SRM
+        </h1>
         <h2 className="text-2xl font-bold text-center">Sign Up</h2>
 
         <input

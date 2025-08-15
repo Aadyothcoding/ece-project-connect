@@ -46,6 +46,9 @@ export default function Login() {
       animate={{ opacity: 1 }}
     >
       <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md fade-in">
+        <h1 className="text-3xl font-bold text-center text-blue-600 mb-2">
+          Project Connect SRM
+        </h1>
         <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
         {error && <p className="text-red-400 mb-3">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">

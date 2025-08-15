@@ -33,6 +33,11 @@ const projectSchema = new mongoose.Schema(
       required: [true, "Stream is required"],
       trim: true,
     },
+    domain: {
+      type: String,
+      required: [true, "Stream is required"],
+      trim: true,
+    },
   },
   {
     timestamps: true,
