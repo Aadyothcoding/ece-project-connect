@@ -5,9 +5,8 @@ import bcrypt from "bcryptjs";
 import { sendWelcomeEmail, sendVerificationEmail, sendResetEmail } from "../lib/mailer.js";
 import crypto from "crypto";
 
-/**
- * @desc Signup for both Teacher & Student
- */
+// ... (signup, forgotPassword, login, logout controllers remain the same)
+
 export const signup = async (req, res) => {
   const { fullName, email, password, role, experience, description, researchPast } = req.body;
 
@@ -75,20 +74,14 @@ export const signup = async (req, res) => {
   }
 };
 
-
-/**
- * @desc Forgot password
- */
 export const forgotPassword = async (req, res) => {
   const { email } = req.body;
 
   if (!email) return res.status(400).json({ message: "Email is required" });
   
-  try { // ✅ ADDED: try block for entire operation
+  try {
     const user = await User.findOne({ email });
     if (!user) {
-        // Note: We send a success message even if the user doesn't exist
-        // to prevent email enumeration attacks.
         return res.status(200).json({ message: "If a user with that email exists, a reset link has been sent." });
     }
     
@@ -99,29 +92,15 @@ export const forgotPassword = async (req, res) => {
     user.resetPasswordExpires = Date.now() + 60 * 60 * 1000; // 1 hour
     await user.save();
     
-    // ✅ CHANGED: Await the email and handle errors
     await sendResetEmail(user.email, user.fullName, rawToken);
     res.status(200).json({ message: "If a user with that email exists, a reset link has been sent." });
 
   } catch (err) {
     console.error("❌ Error in forgotPassword controller:", err.message);
-    // Avoid leaking specific error details to the client
     res.status(500).json({ message: "An error occurred while trying to send the reset email. Please try again later." });
   }
 };
 
-
-/*
-  UNCHANGED CONTROLLERS:
-  - login
-  - logout
-  - updateProfile
-  - checkAuth
-  - verifyEmail
-  - resetPassword
-  (These were already correct)
-*/
-// ... (The rest of the unchanged controllers go here)
 export const login = async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -163,16 +142,48 @@ export const logout = (req, res) => {
   }
 };
 
+
+/**
+ * @desc Update user profile for both Teacher & Student
+ */
 export const updateProfile = async (req, res) => {
   try {
-    const { profilePic, department, skills, resumeUrl } = req.body;
+    // **KEY CHANGE**: Destructure all possible fields from the request body
+    const { 
+        profilePic, 
+        department, 
+        skills, 
+        resumeUrl, 
+        experience, 
+        description, 
+        researchPast 
+    } = req.body;
+    
     const userId = req.user._id;
+
+    // **KEY CHANGE**: Build an object with only the fields that are provided
+    const updatedFields = {};
+    if (profilePic) updatedFields.profilePic = profilePic;
+    if (department) updatedFields.department = department;
+    if (skills) updatedFields.skills = skills;
+    if (resumeUrl) updatedFields.resumeUrl = resumeUrl;
+    
+    // Add teacher-specific fields only if the user is a teacher
+    if (req.user.role === 'teacher') {
+        if (experience) updatedFields.experience = experience;
+        if (description) updatedFields.description = description;
+        if (researchPast) updatedFields.researchPast = researchPast;
+    }
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { profilePic, department, skills, resumeUrl },
-      { new: true }
+      { $set: updatedFields }, // Use the dynamically created object
+      { new: true, runValidators: true } // `new: true` returns the updated doc
     ).select("-password");
+
+    if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+    }
 
     res.status(200).json(updatedUser);
   } catch (error) {
@@ -180,6 +191,7 @@ export const updateProfile = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 
 export const checkAuth = (req, res) => {
   try {
