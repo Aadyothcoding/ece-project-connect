@@ -8,6 +8,9 @@ import StudentProfile from "./pages/StudentProfile.jsx";
 import TeacherProfile from "./pages/TeacherProfile.jsx"
 import TeacherApplications from "./pages/TeacherApplications.jsx";
 import UpdateProject from './pages/UpdateProject';
+import StudentVerification from "./pages/StudentVerification.jsx";
+
+
 export default function App() {
   return (
     <Router>
@@ -22,6 +25,7 @@ export default function App() {
         <Route path="/teacher-profile" element={<TeacherProfile />} />
         <Route path="/teacher/applications/:id" element={<TeacherApplications />} />
         <Route path="/teacher/update-project/:projectId" element={<UpdateProject />} />
+        <Route path="/verify-application/:applicationId/:memberId/:token" element={<StudentVerification />} />
 
       </Routes>
     </Router>
