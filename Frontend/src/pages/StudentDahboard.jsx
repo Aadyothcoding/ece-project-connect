@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { getAllProjects, applyToProject, getCurrentUser } from '../api';
+import { getAllProjects, applyToProject, getCurrentUser, logoutUser } from '../api';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-hot-toast'; // Assuming you have this library installed
-import { LogOut, BookOpen, Send, CheckCircle, User } from 'lucide-react';
+import { toast, Toaster } from 'react-hot-toast';
+import { BookOpen, Send, CheckCircle } from 'lucide-react';
+import Navbar from '../components/Navbar'; // <-- IMPORT NAVBAR
 
 export default function StudentDashboard() {
   const navigate = useNavigate();
@@ -17,7 +18,6 @@ export default function StudentDashboard() {
           navigate('/teacher-dashboard');
         } else {
           setUser(res.data);
-          // Assuming user object contains an array of applied project IDs
           if (res.data.appliedProjects) {
             setAppliedProjectIds(new Set(res.data.appliedProjects));
           }
@@ -56,37 +56,26 @@ export default function StudentDashboard() {
     );
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      navigate('/login');
+    } catch (error) {
+      console.error("Logout failed:", error);
+      navigate('/login');
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-indigo-900 text-white p-4 sm:p-6 lg:p-8 relative">
+      <Toaster position="top-right" toastOptions={{
+          className: 'bg-slate-700 text-white',
+      }} />
       <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22 width=%2232%22 height=%2232%22 fill=%22none%22 stroke=%22rgb(148 163 184 / 0.05)%22%3e%3cpath d=%22m0 .5 32 32M32 .5 0 32%22/%3e%3c/svg%3e')]" />
       
       <div className="relative max-w-7xl mx-auto z-10">
-        <header className="flex items-center justify-between mb-10">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 flex items-center justify-center bg-gradient-to-r from-blue-600 to-cyan-500 rounded-2xl shadow-xl">
-                <User className="w-6 h-6 text-white" />
-            </div>
-            <div>
-                <h1 className="text-3xl font-bold">Student Dashboard</h1>
-                {user && (
-                <p className="text-cyan-200 text-md">
-                    Welcome, <span className="font-semibold">{user.fullName}</span>!
-                </p>
-                )}
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:to-red-700 text-white rounded-full shadow text-sm"
-          >
-            <LogOut className="w-4 h-4" /> Logout
-          </button>
-        </header>
+        {/* ===== USE NAVBAR COMPONENT ===== */}
+        <Navbar user={user} handleLogout={handleLogout} />
 
         <section>
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">

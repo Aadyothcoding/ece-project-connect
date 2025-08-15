@@ -8,16 +8,15 @@ import {
 } from '../api';
 import { useNavigate } from 'react-router-dom';
 import {
-  LogOut,
   Plus,
   BookOpen,
   Users,
   Trash2,
   Loader,
-  BookMarked,
   AlertCircle,
   CheckCircle,
 } from 'lucide-react';
+import Navbar from '../components/Navbar'; // <-- IMPORT NAVBAR
 
 // A simple, non-blocking modal for confirmation
 const ConfirmationModal = ({ message, onConfirm, onCancel }) => (
@@ -45,9 +44,8 @@ export default function TeacherDashboard() {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   
-  // State for our non-blocking alerts and confirmations
   const [notification, setNotification] = useState({ message: '', type: '' });
-  const [confirmDelete, setConfirmDelete] = useState(null); // Will hold project ID
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   const showNotification = (message, type = 'error') => {
     setNotification({ message, type });
@@ -74,9 +72,7 @@ export default function TeacherDashboard() {
     getCurrentUser()
       .then((res) => {
         const currentUser = res.data;
-        // **KEY FIX**: Check if currentUser exists before accessing its properties.
         if (!currentUser || currentUser.role !== 'teacher') {
-          // If no user or not a teacher, navigate away.
           navigate(currentUser ? '/student-dashboard' : '/login');
           return;
         }
@@ -91,37 +87,26 @@ export default function TeacherDashboard() {
   const handleUpload = (e) => {
     e.preventDefault();
     if (!user) {
-      showNotification("User data not loaded. Please wait a moment and try again.");
+      showNotification("User data not loaded. Please wait and try again.");
       return;
     }
     setLoading(true);
 
-    const projectData = {
-      ...newProject,
-      facultyName: user.fullName,
-    };
+    const projectData = { ...newProject, facultyName: user.fullName };
 
     createProject(projectData)
       .then(() => {
         showNotification('Project uploaded successfully!', 'success');
-        setNewProject({
-          projectTitle: '',
-          description: '',
-          applicationDeadline: '',
-          stream: '',
-        });
+        setNewProject({ projectTitle: '', description: '', applicationDeadline: '', stream: '' });
         loadProjectsForCurrentUser(user);
       })
       .catch((err) => {
-        console.error(err);
         showNotification(err.response?.data?.message || 'Failed to upload project.');
       })
       .finally(() => setLoading(false));
   };
 
-  const handleDeleteClick = (id) => {
-    setConfirmDelete(id); // Open the confirmation modal
-  };
+  const handleDeleteClick = (id) => setConfirmDelete(id);
 
   const confirmDeletion = () => {
     if (!confirmDelete) return;
@@ -130,18 +115,11 @@ export default function TeacherDashboard() {
         showNotification('Project deleted successfully.', 'success');
         loadProjectsForCurrentUser(user);
       })
-      .catch((err) => {
-        console.error(err);
-        showNotification('Failed to delete project.');
-      })
-      .finally(() => {
-        setConfirmDelete(null); // Close the modal
-      });
+      .catch(() => showNotification('Failed to delete project.'))
+      .finally(() => setConfirmDelete(null));
   };
 
-  const handleViewApplications = (projectId) => {
-    navigate(`/teacher/applications/${projectId}`);
-  };
+  const handleViewApplications = (projectId) => navigate(`/teacher/applications/${projectId}`);
 
   const handleLogout = async () => {
     try {
@@ -163,7 +141,6 @@ export default function TeacherDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-indigo-900 text-white p-4 sm:p-6 lg:p-8 relative">
-       {/* Notification Popup */}
       {notification.message && (
         <div className={`fixed top-5 right-5 z-50 flex items-center gap-3 p-4 rounded-lg shadow-lg ${notification.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
           {notification.type === 'success' ? <CheckCircle className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
@@ -171,7 +148,6 @@ export default function TeacherDashboard() {
         </div>
       )}
 
-      {/* Confirmation Modal */}
       {confirmDelete && (
         <ConfirmationModal 
           message="Are you sure you want to delete this project? This action cannot be undone."
@@ -183,27 +159,8 @@ export default function TeacherDashboard() {
       <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22 width=%2232%22 height=%2232%22 fill=%22none%22 stroke=%22rgb(148 163 184 / 0.05)%22%3e%3cpath d=%22m0 .5 32 32M32 .5 0 32%22/%3e%3c/svg%3e')]" />
 
       <div className="relative max-w-7xl mx-auto z-10">
-        <header className="flex items-center justify-between mb-10">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 flex items-center justify-center bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl shadow-xl">
-              <BookMarked className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold">Teacher Dashboard</h1>
-              {user && (
-                <p className="text-blue-200 text-md">
-                  Welcome, <span className="font-semibold">{user.fullName}</span>
-                </p>
-              )}
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:to-red-700 text-white rounded-full shadow text-sm"
-          >
-            <LogOut className="w-4 h-4" /> Logout
-          </button>
-        </header>
+        {/* ===== USE NAVBAR COMPONENT ===== */}
+        <Navbar user={user} handleLogout={handleLogout} />
 
         {/* Upload Form */}
         <section className="bg-slate-800/50 backdrop-blur-md border border-slate-700 p-6 rounded-2xl shadow-lg mb-12">
