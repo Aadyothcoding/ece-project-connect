@@ -9,6 +9,7 @@ import { connectDB } from "./lib/db.js";
 import authRoutes from "./routes/auth.routes.js";
 import projectRoutes from "./routes/projectupload.routes.js";
 import studentRoutes from "./routes/studentprojectapply.routes.js";
+import userSearchRoutes from "./routes/usersearch.routes.js";
 
 // Load environment variables
 dotenv.config();
@@ -17,12 +18,14 @@ dotenv.config();
 const app = express();
 
 // ✅ CORS config for Vite frontend + credentials support
-app.use(cors({
-  origin: "http://localhost:5173",
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 // Security & optimization middleware
 app.use(helmet());
@@ -42,6 +45,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/student", studentRoutes);
+app.use("/api/usersearch", userSearchRoutes);
 
 // Catch-all for unknown routes
 app.all("*", (req, res) => {
