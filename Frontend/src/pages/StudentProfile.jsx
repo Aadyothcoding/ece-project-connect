@@ -37,7 +37,6 @@ export default function StudentProfile() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setSaving(true);
-    // Exclude role from the data sent for update
     // eslint-disable-next-line no-unused-vars
     const { role, ...profileData } = profile;
     updateProfile(profileData)
@@ -60,7 +59,7 @@ export default function StudentProfile() {
     }
   };
 
-  if (loading) {
+  if (loading || !profile) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <Loader className="w-10 h-10 text-white animate-spin" />
@@ -95,13 +94,17 @@ export default function StudentProfile() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-400">Profile Picture URL</label>
-                <input type="text" name="profilePic" value={profile.profilePic || ""} onChange={handleChange} className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition" />
+               <div className="space-y-1">
+                <label className="text-sm font-medium text-slate-400">Registration Number</label>
+                <input type="text" name="regNo" value={profile.regNo || "Not set"} disabled className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-slate-400 cursor-not-allowed" />
               </div>
-              <div className="space-y-1">
+               <div className="space-y-1">
                 <label className="text-sm font-medium text-slate-400">Department</label>
                 <input type="text" name="department" value={profile.department || ""} onChange={handleChange} className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition" />
+              </div>
+              <div className="md:col-span-2 space-y-1">
+                <label className="text-sm font-medium text-slate-400">Profile Picture URL</label>
+                <input type="text" name="profilePic" value={profile.profilePic || ""} onChange={handleChange} className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition" />
               </div>
               <div className="md:col-span-2 space-y-1">
                 <label className="text-sm font-medium text-slate-400">Skills (comma-separated)</label>

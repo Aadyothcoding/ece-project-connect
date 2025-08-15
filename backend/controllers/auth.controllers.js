@@ -1,14 +1,12 @@
-// controllers/auth.controllers.js
 import { generateToken } from "../lib/utils.js";
 import User from "../models/auth.models.js";
 import bcrypt from "bcryptjs";
 import { sendWelcomeEmail, sendVerificationEmail, sendResetEmail } from "../lib/mailer.js";
 import crypto from "crypto";
 
-// ... (signup, forgotPassword, login, logout controllers remain the same)
-
 export const signup = async (req, res) => {
-  const { fullName, email, password, role, experience, description, researchPast } = req.body;
+  // Add 'regNo' to the destructuring
+  const { fullName, email, password, role, regNo, experience, description, researchPast } = req.body;
 
   try {
     if (!fullName || !email || !password || !role) {
@@ -20,9 +18,22 @@ export const signup = async (req, res) => {
     if (password.length < 6) {
       return res.status(400).json({ message: "Password must be at least 6 characters" });
     }
+    // Add validation for regNo if the user is a student
+    if (role.toLowerCase() === 'student' && !regNo) {
+        return res.status(400).json({ message: "Registration number is required for students." });
+    }
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "Email already exists" });
+    }
+    
+    // Check if regNo is already in use
+    if (role.toLowerCase() === 'student') {
+        const existingRegNo = await User.findOne({ regNo });
+        if (existingRegNo) {
+            return res.status(400).json({ message: "Registration number already exists." });
+        }
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -35,6 +46,7 @@ export const signup = async (req, res) => {
     const newUser = await User.create({
       fullName,
       email,
+      regNo: role.toLowerCase() === 'student' ? regNo : undefined, // Only save regNo for students
       password: hashedPassword,
       role: role.toLowerCase(),
       experience,
@@ -57,7 +69,6 @@ export const signup = async (req, res) => {
       });
     } catch (emailError) {
       console.error("📧 Email sending failed after user creation:", emailError.message);
-
       res.status(201).json({
         message: "Account created, but failed to send verification email. Please try resending.",
         user: {
@@ -142,13 +153,8 @@ export const logout = (req, res) => {
   }
 };
 
-
-/**
- * @desc Update user profile for both Teacher & Student
- */
 export const updateProfile = async (req, res) => {
   try {
-    // **KEY CHANGE**: Destructure all possible fields from the request body
     const { 
         profilePic, 
         department, 
@@ -161,14 +167,12 @@ export const updateProfile = async (req, res) => {
     
     const userId = req.user._id;
 
-    // **KEY CHANGE**: Build an object with only the fields that are provided
     const updatedFields = {};
     if (profilePic) updatedFields.profilePic = profilePic;
     if (department) updatedFields.department = department;
     if (skills) updatedFields.skills = skills;
     if (resumeUrl) updatedFields.resumeUrl = resumeUrl;
     
-    // Add teacher-specific fields only if the user is a teacher
     if (req.user.role === 'teacher') {
         if (experience) updatedFields.experience = experience;
         if (description) updatedFields.description = description;
@@ -177,8 +181,8 @@ export const updateProfile = async (req, res) => {
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { $set: updatedFields }, // Use the dynamically created object
-      { new: true, runValidators: true } // `new: true` returns the updated doc
+      { $set: updatedFields },
+      { new: true, runValidators: true }
     ).select("-password");
 
     if (!updatedUser) {
@@ -191,7 +195,6 @@ export const updateProfile = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 
 export const checkAuth = (req, res) => {
   try {

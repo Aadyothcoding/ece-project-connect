@@ -14,6 +14,13 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+    // Add the new regNo field
+    regNo: {
+      type: String,
+      unique: true,
+      sparse: true, // Makes the unique index ignore documents where regNo is null
+      trim: true,
+    },
     password: {
       type: String,
       required: [true, "Password is required"],
@@ -30,39 +37,35 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
     skills: {
-      type: [String], // e.g. ["JavaScript", "React", "Node.js"]
+      type: [String],
       default: [],
     },
     resumeUrl: {
-      type: String, // stored file URL from cloud storage
+      type: String,
       default: "",
     },
     profilePic: {
-      type: String, // stored file URL from cloud storage
+      type: String,
       default: "",
     },
     experience: {
-    type: String,
-    required: false,  // or true if mandatory
-  },
-  description: {
-    type: String,
-    required: false,
-  },
-  researchPast: {    // avoid spaces in key names; use camelCase or underscores
-    type: String,
-    required: false,
-  },
-
-    // Email verification fields
+      type: String,
+      required: false,
+    },
+    description: {
+      type: String,
+      required: false,
+    },
+    researchPast: {
+      type: String,
+      required: false,
+    },
     isVerified: {
       type: Boolean,
       default: false,
     },
     verificationToken: String,
     tokenExpires: Date,
-
-    // Forgot/reset password fields
     resetPasswordToken: String,
     resetPasswordExpires: Date,
   },
@@ -70,7 +73,5 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
-//experience , description , research past , previous projects, etc. can be added later as needed,
 
 export default mongoose.model("User", userSchema);

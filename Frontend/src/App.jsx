@@ -7,9 +7,8 @@ import TeacherDashboard from "./pages/TeacherDashboard.jsx";
 import StudentProfile from "./pages/StudentProfile.jsx";
 import TeacherProfile from "./pages/TeacherProfile.jsx"
 import TeacherApplications from "./pages/TeacherApplications.jsx";
-import UpdateProject from './pages/UpdateProject';
-import StudentVerification from "./pages/StudentVerification.jsx";
-
+import UpdateProject from './pages/UpdateProject.jsx';
+import Notifications from "./pages/Notifications.jsx";
 
 export default function App() {
   return (
@@ -19,14 +18,17 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        
+        {/* Student Routes */}
         <Route path="/student-dashboard" element={<StudentDashboard />} />
         <Route path="/student-profile" element={<StudentProfile />} />
+        <Route path="/notifications" element={<Notifications />} />
+
+        {/* Teacher Routes */}
         <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
         <Route path="/teacher-profile" element={<TeacherProfile />} />
         <Route path="/teacher/applications/:id" element={<TeacherApplications />} />
         <Route path="/teacher/update-project/:projectId" element={<UpdateProject />} />
-        <Route path="/verify-application/:applicationId/:memberId/:token" element={<StudentVerification />} />
-
       </Routes>
     </Router>
   );
