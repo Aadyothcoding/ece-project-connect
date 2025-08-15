@@ -10,7 +10,8 @@ import Project from "../models/projectupload.models.js";
 export const createProject = async (req, res) => {
   try {
     // Destructure project details from the request body
-    const { projectTitle, description, applicationDeadline, stream } = req.body;
+    const { projectTitle, description, applicationDeadline, stream, domain } =
+      req.body;
 
     // Get teacher's info from the req.user object (populated by protectRoute middleware)
     const teacherId = req.user._id;
@@ -22,6 +23,7 @@ export const createProject = async (req, res) => {
       description,
       applicationDeadline,
       stream,
+      domain,
       teacherId, // Automatically set the teacher's ID
       facultyName, // Automatically set the teacher's name
     });
@@ -70,12 +72,10 @@ export const getProjectsByTeacher = async (req, res) => {
     res.status(200).json(projects);
   } catch (error) {
     console.error("Error in getProjectsByTeacher:", error.message);
-    res
-      .status(500)
-      .json({
-        message: "Error fetching teacher's projects",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error fetching teacher's projects",
+      error: error.message,
+    });
   }
 };
 
