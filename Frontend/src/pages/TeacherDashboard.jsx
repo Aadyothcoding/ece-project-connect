@@ -235,6 +235,12 @@ export default function TeacherDashboard() {
               {projects.map((p) => (
                 <div key={p._id} className="bg-slate-800/40 backdrop-blur-md border border-slate-700 rounded-2xl p-6 shadow-lg hover:border-purple-500 transition-all duration-300 flex flex-col justify-between">
                   <div>
+                  <button
+  onClick={() => navigate(`/teacher/update-project/${p._id}`)}
+  className="ml-auto flex items-center justify-center gap-2 text-sm bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white px-3 py-2 rounded-md font-semibold transition"
+>
+  ✏️ Edit
+</button>
                     <h3 className="text-xl font-bold mb-2 text-white">{p.projectTitle}</h3>
                     <p className="text-sm text-slate-300 mb-4 h-20 overflow-y-auto">{p.description}</p>
                     <div className="text-xs text-slate-400 space-y-2 border-t border-slate-700 pt-3 mt-3">
@@ -249,6 +255,7 @@ export default function TeacherDashboard() {
                     <button onClick={() => handleDeleteClick(p._id)} className="flex-1 flex items-center justify-center gap-2 text-sm bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white px-3 py-2 rounded-md font-semibold transition">
                       <Trash2 className="w-4 h-4" /> Delete
                     </button>
+
                   </div>
                 </div>
               ))}
