@@ -29,7 +29,8 @@ export const getPendingInvitations = () => API.get("/student/invitations");
 export const respondToInvitation = (data) => API.post("/student/invitations/respond", data);
 
 // --- USER SEARCH ROUTE ---
-export const searchStudents = (name) => API.get(`/users/search-students?name=${name}`);
+export const searchStudents = (name) => API.get(`/usersearch?q=${name}`);
+
 
 // --- TEAM APPROVAL ROUTES ---
 export const approveApplication = (id) => API.post(`/team-approved/approve/${id}`);
