@@ -32,3 +32,10 @@ export const respondToInvitation = (data) =>
 
 // --- USER SEARCH ROUTE ---
 export const searchStudents = (name) => API.get(`/usersearch?q=${name}`);
+
+// --- TEAM APPROVAL ROUTES ---
+export const approveApplication = (id) =>
+  API.post(`/team-approved/approve/${id}`);
+export const rejectApplication = (id) =>
+  API.post(`/team-approved/reject/${id}`);
+export const getApprovedTeams = () => API.get(`/team-approved`);
