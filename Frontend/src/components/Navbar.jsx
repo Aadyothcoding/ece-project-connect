@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { LogOut, User, Bell } from 'lucide-react';
+import { LogOut, User, Bell, Users } from 'lucide-react';
 
 export default function Navbar({ user, handleLogout, notificationCount }) {
   const navigate = useNavigate();
@@ -37,6 +37,17 @@ export default function Navbar({ user, handleLogout, notificationCount }) {
             )}
           </Link>
         )}
+
+        {/* My Teams link for Teachers */}
+        {user?.role === 'teacher' && (
+          <Link 
+            to="/teacher/my-teams"
+            className="hidden sm:flex items-center gap-2 px-4 py-2 bg-slate-700/50 hover:bg-slate-700 text-white rounded-full shadow text-sm transition-colors"
+          >
+            <Users className="w-4 h-4" /> My Teams
+          </Link>
+        )}
+
         <Link 
           to={profileUrl}
           className="hidden sm:flex items-center gap-2 px-4 py-2 bg-slate-700/50 hover:bg-slate-700 text-white rounded-full shadow text-sm transition-colors"
