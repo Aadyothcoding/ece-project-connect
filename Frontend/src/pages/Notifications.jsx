@@ -5,26 +5,29 @@ import {
   respondToInvitation,
   getCurrentUser,
   logoutUser,
+  getNotifications, // ✅ add this to api.js if not already
 } from "../api";
 import { toast, Toaster } from "react-hot-toast";
 import { Loader, Bell, Check, X, Inbox } from "lucide-react";
 import Navbar from "../components/Navbar";
 
 export default function Notifications() {
-  const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const [notifications, setNotifications] = useState([]);
   const [invitations, setInvitations] = useState([]);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  const fetchInvitations = useCallback(() => {
+  const fetchData = useCallback(() => {
     setLoading(true);
-    getPendingInvitations()
-      .then((res) => {
-        setInvitations(res.data);
+    Promise.all([getPendingInvitations(), getNotifications()])
+      .then(([invRes, notifRes]) => {
+        setInvitations(invRes.data || []);
+        setNotifications(notifRes.data.notifications || []);
       })
       .catch((err) => {
-        console.error("Failed to fetch invitations:", err);
-        toast.error("Could not load your invitations.");
+        console.error("Failed to fetch notifications:", err);
+        toast.error("Could not load notifications.");
       })
       .finally(() => setLoading(false));
   }, []);
@@ -36,11 +39,11 @@ export default function Notifications() {
           navigate("/teacher-dashboard");
         } else {
           setUser(res.data);
-          fetchInvitations();
+          fetchData(); // ✅ fetch both invitations + notifications
         }
       })
       .catch(() => navigate("/login"));
-  }, [navigate, fetchInvitations]);
+  }, [navigate, fetchData]);
 
   const handleInvitationResponse = (applicationId, memberId, response) => {
     // Optimistically remove the invitation first
@@ -52,8 +55,7 @@ export default function Notifications() {
       loading: "Submitting your response...",
       success: (res) => res.data.message,
       error: (err) => {
-        // In case of error, put the invite back
-        fetchInvitations();
+        fetchData(); // refresh if error
         return err.response?.data?.message || "Action failed.";
       },
     });
@@ -63,7 +65,6 @@ export default function Notifications() {
     try {
       await logoutUser();
       navigate("/login");
-      // eslint-disable-next-line no-unused-vars
     } catch (error) {
       navigate("/login");
     }
@@ -83,14 +84,15 @@ export default function Notifications() {
         position="top-right"
         toastOptions={{ className: "bg-slate-700 text-white" }}
       />
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22 width=%2232%22 height=%2232%22 fill=%22none%22 stroke=%22rgb(148 163 184 / 0.05)%22%3e%3cpath d=%22m0 .5 32 32M32 .5 0 32%22/%3e%3c/svg%3e')]" />
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 32 32%22 width=%2232%22 height=%2232%22 fill=%22none%22 stroke=%22rgb(148 163 184 / 0.05)%22%3e%3cpath d=%22m0 .5 32 32M32 .5 0 32%22/%3e%3c/svg%3e')]" />
       <div className="relative max-w-4xl mx-auto z-10">
         <Navbar
           user={user}
           handleLogout={handleLogout}
-          notificationCount={invitations.length}
+          notificationCount={invitations.length + notifications.length}
         />
 
+        {/* Invitations */}
         <section>
           <h2 className="text-3xl font-bold mb-8 flex items-center gap-3">
             <Bell className="w-8 h-8 text-yellow-400" />
@@ -147,6 +149,35 @@ export default function Notifications() {
                       <X size={16} /> Decline
                     </button>
                   </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* General Notifications */}
+        <section className="mt-12">
+          <h2 className="text-3xl font-bold mb-8 flex items-center gap-3">
+            <Bell className="w-8 h-8 text-blue-400" />
+            Notifications
+          </h2>
+          {notifications.length === 0 ? (
+            <div className="text-center text-slate-400 bg-slate-800/50 p-12 rounded-2xl flex flex-col items-center gap-4">
+              <Inbox className="w-16 h-16 text-slate-500" />
+              <h3 className="text-2xl font-bold">No Notifications</h3>
+              <p>You're all caught up!</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {notifications.map((n) => (
+                <div
+                  key={n._id}
+                  className="bg-slate-800/60 border border-slate-700 rounded-lg p-4"
+                >
+                  <p>{n.message}</p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {new Date(n.createdAt).toLocaleString()}
+                  </p>
                 </div>
               ))}
             </div>

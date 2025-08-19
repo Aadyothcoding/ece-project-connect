@@ -1,6 +1,7 @@
 // controllers/teamapproved.controller.js
 import StudentProjectApply from "../models/studentprojectapply.models.js";
 import TeamApproved from "../models/teamapproved.model.js";
+import Notification from "../models/notifications.model.js";
 
 // ✅ Approve an application
 export const approveApplication = async (req, res) => {
@@ -28,11 +29,21 @@ export const approveApplication = async (req, res) => {
 
     await approvedTeam.save();
 
+    // Send notifications to all members 🚀
+    for (const member of application.members) {
+      await Notification.create({
+        userId: member.studentId,
+        title: "Project Application Approved",
+        message: `Your application for project "${application.projectId.projectTitle}" has been approved by ${application.projectId.facultyName}.`,
+        type: "success",
+      });
+    }
+
     // Delete from studentprojectapplies
     await StudentProjectApply.findByIdAndDelete(applicationId);
 
     res.status(201).json({
-      message: "Application approved and moved to TeamApproved",
+      message: "Application approved, team created, and notifications sent",
       approvedTeam,
     });
   } catch (err) {
@@ -46,14 +57,29 @@ export const rejectApplication = async (req, res) => {
   try {
     const { applicationId } = req.params;
 
-    const application = await StudentProjectApply.findById(applicationId);
+    const application = await StudentProjectApply.findById(
+      applicationId
+    ).populate("projectId");
     if (!application) {
       return res.status(404).json({ message: "Application not found" });
     }
 
+    // Send rejection notifications 🚨
+    for (const member of application.members) {
+      await Notification.create({
+        userId: member.studentId,
+        title: "Project Application Rejected",
+        message: `Your application for project "${application.projectId?.projectTitle}" has been rejected by ${application.projectId?.facultyName}.`,
+        type: "error",
+      });
+    }
+
+    // Delete application
     await StudentProjectApply.findByIdAndDelete(applicationId);
 
-    res.status(200).json({ message: "Application rejected and deleted" });
+    res
+      .status(200)
+      .json({ message: "Application rejected and notifications sent" });
   } catch (err) {
     console.error("Reject error:", err);
     res.status(500).json({ message: "Server error", error: err.message });

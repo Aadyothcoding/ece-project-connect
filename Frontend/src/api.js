@@ -22,17 +22,22 @@ export const updateProject = (id, data) => API.put(`/projects/${id}`, data);
 
 // --- STUDENT & APPLICATION ROUTES ---
 export const applyToProject = (data) => API.post("/student/apply", data);
-export const getApplicationsForProject = (projectId) => API.get(`/student/${projectId}`);
+export const getApplicationsForProject = (projectId) =>
+  API.get(`/student/${projectId}`);
 
 // --- NOTIFICATION / INVITATION ROUTES ---
 export const getPendingInvitations = () => API.get("/student/invitations");
-export const respondToInvitation = (data) => API.post("/student/invitations/respond", data);
+export const respondToInvitation = (data) =>
+  API.post("/student/invitations/respond", data);
+export const getNotifications = () => API.get("/notifications/me");
+export const deleteNotification = (id) => API.delete(`/notifications/${id}`);
 
 // --- USER SEARCH ROUTE ---
 export const searchStudents = (name) => API.get(`/usersearch?q=${name}`);
 
-
 // --- TEAM APPROVAL ROUTES ---
-export const approveApplication = (id) => API.post(`/team-approved/approve/${id}`);
-export const rejectApplication = (id) => API.post(`/team-approved/reject/${id}`);
+export const approveApplication = (id) =>
+  API.post(`/team-approved/approve/${id}`);
+export const rejectApplication = (id) =>
+  API.post(`/team-approved/reject/${id}`);
 export const getApprovedTeams = () => API.get(`/team-approved`);
