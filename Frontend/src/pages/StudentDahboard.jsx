@@ -38,7 +38,7 @@ const useDebounce = (value, delay) => {
 
 // ApplyModal with live search functionality
 const ApplyModal = ({ project, onClose, onApply }) => {
-  const [applicationType, setApplicationType] = useState("individual");
+  const [applicationType] = useState("group");
   const [members, setMembers] = useState([
     { name: "", regNo: "" },
     { name: "", regNo: "" },
@@ -147,23 +147,21 @@ const ApplyModal = ({ project, onClose, onApply }) => {
   };
 
   const handleSubmit = async () => {
-    if (applicationType === "group") {
-      for (const member of members) {
-        if (
-          !member.name.trim() ||
-          !member.regNo.trim() ||
-          member.regNo === "N/A"
-        ) {
-          toast.error("Please select valid teammates from the search results.");
-          return;
-        }
+    for (const member of members) {
+      if (
+        !member.name.trim() ||
+        !member.regNo.trim() ||
+        member.regNo === "N/A"
+      ) {
+        toast.error("Please select valid teammates from the search results.");
+        return;
       }
     }
     setIsSubmitting(true);
     const applicationData = {
       projectId: project._id,
-      applicationType,
-      members: applicationType === "group" ? members : [],
+      applicationType: "group",
+      members,
     };
 
     toast
@@ -192,22 +190,8 @@ const ApplyModal = ({ project, onClose, onApply }) => {
         </div>
         <div className="flex gap-4 mb-6">
           <button
-            onClick={() => setApplicationType("individual")}
-            className={`flex-1 p-3 rounded-lg flex items-center justify-center gap-2 transition ${
-              applicationType === "individual"
-                ? "bg-cyan-600 text-white"
-                : "bg-slate-700 hover:bg-slate-600 text-slate-300"
-            }`}
-          >
-            <User /> Individual
-          </button>
-          <button
-            onClick={() => setApplicationType("group")}
-            className={`flex-1 p-3 rounded-lg flex items-center justify-center gap-2 transition ${
-              applicationType === "group"
-                ? "bg-cyan-600 text-white"
-                : "bg-slate-700 hover:bg-slate-600 text-slate-300"
-            }`}
+            className="flex-1 p-3 rounded-lg flex items-center justify-center gap-2 bg-cyan-600 text-white cursor-not-allowed"
+            disabled
           >
             <Users /> Group (3 members)
           </button>
