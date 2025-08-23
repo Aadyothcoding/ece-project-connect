@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import Navbar from "../components/Navbar"; // <-- IMPORT NAVBAR
 
-
 const ConfirmationModal = ({ message, onConfirm, onCancel }) => (
   <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
     <div className="bg-slate-800 rounded-lg p-6 shadow-xl max-w-sm text-center">
@@ -97,10 +96,18 @@ export default function TeacherDashboard() {
 
   const handleUpload = (e) => {
     e.preventDefault();
+
     if (!user) {
       showNotification("User data not loaded. Please wait and try again.");
       return;
     }
+
+    // 🚨 Restrict to 2 projects max
+    if (projects.length >= 2) {
+      showNotification("You can only upload a maximum of 2 projects.");
+      return;
+    }
+
     setLoading(true);
 
     const projectData = { ...newProject, facultyName: user.fullName };
@@ -113,6 +120,7 @@ export default function TeacherDashboard() {
           description: "",
           applicationDeadline: "",
           stream: "",
+          domain: "",
         });
         loadProjectsForCurrentUser(user);
       })
@@ -303,13 +311,20 @@ export default function TeacherDashboard() {
             <div className="md:col-span-2">
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-semibold shadow-md transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading || projects.length >= 2}
+                className="w-full flex items-center justify-center gap-2 
+    bg-gradient-to-r from-purple-600 to-pink-600 
+    hover:from-purple-700 hover:to-pink-700 text-white 
+    px-6 py-3 rounded-lg font-semibold shadow-md 
+    transition-transform transform hover:scale-105 
+    disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>
                     <Loader className="animate-spin w-5 h-5" /> Uploading...
                   </>
+                ) : projects.length >= 2 ? (
+                  "Limit Reached (2 Projects)"
                 ) : (
                   "Upload Project"
                 )}
