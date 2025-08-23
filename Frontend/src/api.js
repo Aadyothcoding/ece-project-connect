@@ -41,3 +41,10 @@ export const approveApplication = (id) =>
 export const rejectApplication = (id) =>
   API.post(`/team-approved/reject/${id}`);
 export const getApprovedTeams = () => API.get(`/team-approved`);
+export const removeTeamMember = (teamId, memberId) =>
+  API.delete(`/team-approved/${teamId}/members/${memberId}`);
+export const searchStudentByRegNo = (regNo) =>
+  API.get(`/team-approved/search-student?regNo=${regNo}`);
+
+export const addTeamMember = (teamId, studentId) =>
+  API.post(`/team-approved/${teamId}/members`, { studentId });

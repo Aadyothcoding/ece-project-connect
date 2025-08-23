@@ -97,3 +97,92 @@ export const getApprovedTeams = async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
+
+// ✅ Remove a member from an approved team
+export const removeMemberFromTeam = async (req, res) => {
+  try {
+    const { teamId, memberId } = req.params;
+
+    const updatedTeam = await TeamApproved.findByIdAndUpdate(
+      teamId,
+      { $pull: { members: { studentId: memberId } } },
+      { new: true }
+    )
+      .populate("projectId")
+      .populate("members.studentId");
+
+    if (!updatedTeam) {
+      return res.status(404).json({ message: "Team not found" });
+    }
+
+    // Send notification to removed member 🚨
+    await Notification.create({
+      userId: memberId,
+      title: "Removed from Team",
+      message: `You have been removed from the project "${updatedTeam.projectId.projectTitle}" by ${updatedTeam.facultyName}.`,
+      type: "warning",
+    });
+
+    res.status(200).json({
+      message: "Member removed successfully",
+      team: updatedTeam,
+    });
+  } catch (err) {
+    console.error("Remove member error:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+// ➕ Add member to approved team
+export const addMemberToTeam = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const { studentId } = req.body;
+
+    const team = await TeamApproved.findById(teamId);
+    if (!team) {
+      return res.status(404).json({ message: "Team not found" });
+    }
+
+    // Check if student already in ANY team
+    const alreadyInTeam = await TeamApproved.findOne({
+      "members.studentId": studentId,
+    });
+
+    if (alreadyInTeam) {
+      return res.status(400).json({
+        message: "This student is already part of another approved team",
+      });
+    }
+
+    // Get student info from User model
+    const User = (await import("../models/auth.models.js")).default;
+    const student = await User.findById(studentId);
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    // Add member
+    team.members.push({
+      studentId: student._id,
+      name: student.fullName,
+      regNo: student.regNo,
+    });
+
+    await team.save();
+    await team.populate("projectId members.studentId");
+
+    // Notify student
+    await Notification.create({
+      userId: student._id,
+      title: "Added to Project Team",
+      message: `You have been added to the project "${team.projectId.projectTitle}" by ${team.facultyName}.`,
+      type: "info",
+    });
+
+    res.status(200).json({ message: "Member added successfully", team });
+  } catch (err) {
+    console.error("Add member error:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
