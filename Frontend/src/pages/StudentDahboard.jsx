@@ -18,7 +18,6 @@ import {
   User,
   X,
   Loader,
-  Bell,
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 
@@ -104,9 +103,7 @@ const ApplyModal = ({ project, onClose, onApply }) => {
     setMembers(updatedMembers);
     setActiveIndex(index);
 
-    // If length matches typical regNo length (e.g., 10 chars), check immediately
     if (value.length >= 8) {
-      // adjust min length for regNo
       fetchStudentByRegNo(index, value);
     }
   };
@@ -122,13 +119,12 @@ const ApplyModal = ({ project, onClose, onApply }) => {
     const updatedQueries = [...searchQueries];
     updatedQueries[memberIndex] = student.regNo;
 
-    setActiveIndex(null); // Hide dropdown after selection
+    setActiveIndex(null);
   };
 
   const fetchStudentByRegNo = async (index, regNo) => {
     try {
       const res = await searchStudents(regNo);
-      // Only auto-fill if exactly one match AND regNo matches exactly
       if (
         res.data.length === 1 &&
         res.data[0].regNo.toLowerCase() === regNo.toLowerCase()
@@ -178,13 +174,13 @@ const ApplyModal = ({ project, onClose, onApply }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-800 rounded-lg p-6 md:p-8 shadow-xl max-w-lg w-full border border-slate-700">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg p-6 md:p-8 shadow-xl max-w-lg w-full border border-slate-200 text-gray-800">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl md:text-2xl font-bold text-white">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-800">
             Apply to: {project.projectTitle}
           </h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white">
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-800">
             <X size={28} />
           </button>
         </div>
@@ -198,9 +194,9 @@ const ApplyModal = ({ project, onClose, onApply }) => {
         </div>
         {applicationType === "group" && (
           <div className="space-y-4 mb-6">
-            <p className="text-sm text-slate-400">
-              You are the group leader. Search for your 2 teammates by name to
-              add them to the group. They will be notified on their dashboard.
+            <p className="text-sm text-gray-600">
+              You are the group leader. Search for your 2 teammates by their
+              registration number.
             </p>
             {[0, 1].map((index) => (
               <div
@@ -213,19 +209,19 @@ const ApplyModal = ({ project, onClose, onApply }) => {
                     placeholder={`Enter Teammate ${index + 1} Reg. No.`}
                     value={searchQueries[index]}
                     onChange={(e) => handleSearchChange(index, e.target.value)}
-                    className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition"
+                    className="w-full px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
                   />
                   {activeIndex === index && searchQueries[index].length > 1 && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900 border border-slate-700 rounded-lg z-10 max-h-40 overflow-y-auto">
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-300 rounded-lg z-10 max-h-40 overflow-y-auto shadow-lg">
                       {searchLoading[index] && (
-                        <div className="p-3 text-slate-400 flex items-center gap-2">
+                        <div className="p-3 text-gray-500 flex items-center gap-2">
                           <Loader className="animate-spin w-4 h-4" />{" "}
                           Searching...
                         </div>
                       )}
                       {!searchLoading[index] &&
                         searchResults[index].length === 0 && (
-                          <div className="p-3 text-slate-400">
+                          <div className="p-3 text-gray-500">
                             No students found.
                           </div>
                         )}
@@ -233,10 +229,10 @@ const ApplyModal = ({ project, onClose, onApply }) => {
                         <div
                           key={student._id}
                           onClick={() => handleSelectStudent(index, student)}
-                          className="p-3 hover:bg-slate-700 cursor-pointer"
+                          className="p-3 hover:bg-slate-100 cursor-pointer"
                         >
-                          <p className="font-semibold">{student.fullName}</p>
-                          <p className="text-xs text-slate-400">
+                          <p className="font-semibold text-gray-800">{student.fullName}</p>
+                          <p className="text-xs text-gray-500">
                             {student.regNo}
                           </p>
                         </div>
@@ -246,10 +242,10 @@ const ApplyModal = ({ project, onClose, onApply }) => {
                 </div>
                 <input
                   type="text"
-                  placeholder="Registration No."
-                  value={members[index].regNo}
+                  placeholder="Student Name"
+                  value={members[index].name}
                   readOnly
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-slate-400 cursor-not-allowed"
+                  className="w-full px-4 py-2 bg-slate-200 border border-slate-300 rounded-lg text-gray-500 cursor-not-allowed"
                 />
               </div>
             ))}
@@ -258,7 +254,7 @@ const ApplyModal = ({ project, onClose, onApply }) => {
         <button
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-4 py-3 rounded-lg font-semibold disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg shadow-md transition-transform transform hover:scale-105 disabled:opacity-50"
         >
           {isSubmitting ? "Submitting..." : "Confirm Application"}
         </button>
@@ -275,10 +271,9 @@ export default function StudentDashboard() {
   const [appliedProjectIds, setAppliedProjectIds] = useState(new Set());
   const [selectedProject, setSelectedProject] = useState(null);
   const [invitations, setInvitations] = useState([]);
-  const [searchQuery, setSearchQuery] = useState(""); // <-- NEW for title search
-  const [selectedDomains, setSelectedDomains] = useState([]); // <-- NEW
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedDomains, setSelectedDomains] = useState([]);
 
-  // 1️⃣ Domain filter options
   const domainOptions = [
     "Analog Circuits",
     "Digital Circuits",
@@ -341,7 +336,6 @@ export default function StudentDashboard() {
       .catch(() => toast.error("Could not load available projects."));
   }, [navigate, fetchInvitations]);
 
-  // 2️⃣ Filtering projects based on search + selected domains
   useEffect(() => {
     let filtered = projects;
 
@@ -371,7 +365,6 @@ export default function StudentDashboard() {
     }
   };
 
-  // 3️⃣ Toggle domain filter
   const toggleDomain = (domain) => {
     setSelectedDomains((prev) =>
       prev.includes(domain)
@@ -381,10 +374,9 @@ export default function StudentDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-indigo-900 text-white p-4 sm:p-6 lg:p-8 relative">
+    <div className="min-h-screen bg-slate-100 text-gray-800">
       <Toaster
         position="top-right"
-        toastOptions={{ className: "bg-slate-700 text-white" }}
       />
       {selectedProject && (
         <ApplyModal
@@ -394,7 +386,7 @@ export default function StudentDashboard() {
         />
       )}
 
-      <div className="relative max-w-7xl mx-auto z-10">
+      <div className="relative max-w-7xl mx-auto z-10 p-4 sm:p-6 lg:p-8">
         <Navbar
           user={user}
           handleLogout={handleLogout}
@@ -402,17 +394,16 @@ export default function StudentDashboard() {
         />
 
         <div className="lg:flex lg:gap-8 mt-6">
-          {/* 4️⃣ Sidebar Filter Menu */}
-          <aside className="w-full lg:w-64 mb-8 lg:mb-0 bg-slate-800/50 p-4 rounded-lg border border-slate-700 h-fit lg:sticky top-20">
-            <h3 className="text-lg font-bold mb-4">Filter by Domain</h3>
+          <aside className="w-full lg:w-64 mb-8 lg:mb-0 bg-white p-4 rounded-xl shadow-lg border border-slate-200 h-fit lg:sticky top-8">
+            <h3 className="text-lg font-bold mb-4 text-gray-700">Filter by Domain</h3>
             <div className="space-y-2 max-h-[30vh] lg:max-h-[60vh] overflow-y-auto">
               {domainOptions.map((domain) => (
-                <label key={domain} className="flex items-center gap-2 text-sm">
+                <label key={domain} className="flex items-center gap-2 text-sm text-gray-600">
                   <input
                     type="checkbox"
                     checked={selectedDomains.includes(domain)}
                     onChange={() => toggleDomain(domain)}
-                    className="accent-cyan-500"
+                    className="accent-cyan-600"
                   />
                   {domain}
                 </label>
@@ -420,39 +411,36 @@ export default function StudentDashboard() {
             </div>
           </aside>
 
-          {/* Main Projects Section */}
           <main className="flex-1">
-            {/* Search Bar */}
-            <div className="mb-6 flex items-center bg-slate-800/50 border border-slate-700 rounded-lg px-4 py-2">
-              <Search className="w-5 h-5 text-slate-400 mr-2" />
+            <div className="mb-6 flex items-center bg-white border border-slate-200 rounded-lg px-4 py-2 shadow-sm">
+              <Search className="w-5 h-5 text-gray-400 mr-2" />
               <input
                 type="text"
                 placeholder="Search by project title..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-transparent outline-none text-white placeholder-slate-400"
+                className="w-full bg-transparent outline-none text-gray-700 placeholder-gray-400"
               />
             </div>
 
-            {/* Projects List */}
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-              <BookOpen className="w-6 h-6 text-cyan-400" />
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-3 text-gray-700">
+              <BookOpen className="w-6 h-6 text-cyan-600" />
               Available Projects
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {filteredProjects.map((p) => (
                 <div
                   key={p._id}
-                  className="bg-slate-800/40 backdrop-blur-md border border-slate-700 rounded-2xl p-6 shadow-lg hover:border-cyan-500 transition-all duration-300 flex flex-col"
+                  className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 flex flex-col justify-between transition hover:shadow-cyan-100 hover:border-cyan-300"
                 >
                   <div className="flex-grow">
-                    <h3 className="text-xl font-bold mb-2 text-white">
+                    <h3 className="text-xl font-bold mb-2 text-gray-800">
                       {p.projectTitle}
                     </h3>
-                    <p className="text-sm text-slate-300 mb-4 h-24 overflow-y-auto">
+                    <p className="text-sm text-gray-600 mb-4 h-24 overflow-y-auto">
                       {p.description}
                     </p>
-                    <div className="text-xs text-slate-400 space-y-2 border-t border-slate-700 pt-3 mt-3">
+                    <div className="text-xs text-gray-500 space-y-2 border-t border-slate-200 pt-3 mt-3">
                       <p>
                         <strong>Faculty:</strong> {p.facultyName}
                       </p>
@@ -467,7 +455,7 @@ export default function StudentDashboard() {
                   <button
                     onClick={() => setSelectedProject(p)}
                     disabled={appliedProjectIds.has(p._id)}
-                    className="mt-6 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-4 py-3 rounded-lg font-semibold transition-transform transform hover:scale-105 disabled:from-slate-600 disabled:to-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed"
+                    className="mt-6 w-full flex items-center justify-center gap-2 py-3 px-4 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg shadow-md transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {appliedProjectIds.has(p._id) ? (
                       <>

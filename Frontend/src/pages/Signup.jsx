@@ -3,19 +3,16 @@ import { Link, useNavigate } from "react-router-dom";
 import { signupUser } from "../api.js";
 import { toast, Toaster } from "react-hot-toast";
 import { UserPlus } from "lucide-react";
+import srmLogo from '../assets/SRM_Institute_of_Science_and_Technology_Logo.svg.png'; // 🖼️ IMPORT YOUR LOGO HERE
 
 export default function Signup() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
-    regNo: "", // Added registration number field
+    regNo: "",
     password: "",
     role: "student",
-    // Teacher-specific fields
-    experience: "",
-    description: "",
-    researchPast: "",
   });
   const [loading, setLoading] = useState(false);
 
@@ -28,7 +25,6 @@ export default function Signup() {
     e.preventDefault();
     setLoading(true);
 
-    // Prepare data to send, excluding teacher fields if role is student
     const dataToSend = {
       fullName: formData.fullName,
       email: formData.email,
@@ -38,10 +34,6 @@ export default function Signup() {
 
     if (formData.role === 'student') {
       dataToSend.regNo = formData.regNo;
-    } else {
-      dataToSend.experience = formData.experience;
-      dataToSend.description = formData.description;
-      dataToSend.researchPast = formData.researchPast;
     }
 
     toast.promise(
@@ -58,41 +50,65 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-indigo-900 text-white flex items-center justify-center p-4">
-      <Toaster position="top-right" toastOptions={{ className: "bg-slate-700 text-white" }} />
-      <div className="w-full max-w-md">
-        <div className="bg-slate-800/50 backdrop-blur-md border border-slate-700 p-8 rounded-2xl shadow-lg text-center">
-            <UserPlus className="mx-auto w-12 h-12 text-cyan-400 mb-4" />
-            <h1 className="text-3xl font-bold mb-2">Create an Account</h1>
-            <p className="text-slate-400 mb-6">Join Project Connect SRM</p>
-
-            <form onSubmit={handleSubmit} className="space-y-4 text-left">
-                <select name="role" value={formData.role} onChange={handleChange} className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition">
-                    <option value="student">I am a Student</option>
-                    <option value="teacher">I am a Teacher</option>
-                </select>
-
-                <input type="text" name="fullName" placeholder="Full Name" value={formData.fullName} onChange={handleChange} className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition" required />
-                
-                {/* Conditionally render Registration Number for students */}
-                {formData.role === 'student' && (
-                    <input type="text" name="regNo" placeholder="Registration Number" value={formData.regNo} onChange={handleChange} className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition" required />
-                )}
-
-                <input type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleChange} className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition" required />
-                <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition" required minLength={6} />
-
-                <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-6 py-3 rounded-lg font-semibold shadow-md transition-transform transform hover:scale-105 disabled:opacity-50">
-                    {loading ? 'Signing Up...' : 'Sign Up'}
-                </button>
-            </form>
-            <p className="text-center text-sm text-slate-400 mt-6">
-                Already have an account?{" "}
-                <Link to="/login" className="font-semibold text-cyan-400 hover:underline">
-                    Login
-                </Link>
-            </p>
+    <div className="flex items-center justify-center min-h-screen bg-slate-100 p-4">
+      <Toaster position="top-right" />
+      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-2xl">
+        <div className="text-center">
+          {/* 🖼️ Use the imported logo variable here */}
+          <img 
+            src={srmLogo} 
+            alt="College Logo" 
+            className="mx-auto mb-4 h-12" 
+          />
+          <h1 className="text-2xl font-bold text-gray-800">
+            Create an Account
+          </h1>
+          <p className="text-gray-500">Join the Project Connect Portal</p>
         </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-sm font-medium text-gray-600">I am a...</label>
+            <select name="role" value={formData.role} onChange={handleChange} className="w-full px-4 py-2 mt-1 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition">
+              <option value="student">Student</option>
+              <option value="teacher">Teacher</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-600">Full Name</label>
+            <input type="text" name="fullName" placeholder="Enter your full name" value={formData.fullName} onChange={handleChange} className="w-full px-4 py-2 mt-1 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition" required />
+          </div>
+
+          {formData.role === 'student' && (
+            <div>
+              <label className="text-sm font-medium text-gray-600">Registration Number</label>
+              <input type="text" name="regNo" placeholder="Enter your registration number" value={formData.regNo} onChange={handleChange} className="w-full px-4 py-2 mt-1 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition" required />
+            </div>
+          )}
+
+          <div>
+            <label className="text-sm font-medium text-gray-600">Email Address</label>
+            <input type="email" name="email" placeholder="Enter your email" value={formData.email} onChange={handleChange} className="w-full px-4 py-2 mt-1 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition" required />
+          </div>
+          
+          <div>
+            <label className="text-sm font-medium text-gray-600">Password</label>
+            <input type="password" name="password" placeholder="Create a password" value={formData.password} onChange={handleChange} className="w-full px-4 py-2 mt-1 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition" required minLength={6} />
+          </div>
+
+          <button type="submit" disabled={loading} className="w-full flex justify-center items-center gap-2 py-3 px-4 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg shadow-md transition-transform transform hover:scale-105 disabled:opacity-50">
+            {loading ? 'Creating Account...' : 'Sign Up'}
+            {!loading && <UserPlus size={18} />}
+          </button>
+        </form>
+
+        <p className="text-sm text-center text-gray-600">
+          Already have an account?{" "}
+          <Link to="/login" className="font-medium text-cyan-600 hover:underline">
+            Login
+          </Link>
+        </p>
       </div>
     </div>
   );

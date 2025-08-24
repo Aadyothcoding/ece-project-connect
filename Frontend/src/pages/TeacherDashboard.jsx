@@ -15,23 +15,27 @@ import {
   Loader,
   AlertCircle,
   CheckCircle,
+  Edit,
+  ChevronDown,
 } from "lucide-react";
-import Navbar from "../components/Navbar"; // <-- IMPORT NAVBAR
+import Navbar from "../components/Navbar";
+// eslint-disable-next-line no-unused-vars
+import { motion, AnimatePresence } from "framer-motion";
 
 const ConfirmationModal = ({ message, onConfirm, onCancel }) => (
   <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-    <div className="bg-slate-800 rounded-lg p-6 shadow-xl max-w-sm text-center">
+    <div className="bg-white rounded-lg p-6 shadow-xl max-w-sm text-center text-gray-800">
       <p className="mb-6">{message}</p>
       <div className="flex justify-center gap-4">
         <button
           onClick={onCancel}
-          className="px-4 py-2 bg-slate-600 hover:bg-slate-500 rounded-md"
+          className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md text-gray-700 font-semibold"
         >
           Cancel
         </button>
         <button
           onClick={onConfirm}
-          className="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-md"
+          className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md text-white font-semibold"
         >
           Confirm
         </button>
@@ -53,6 +57,7 @@ export default function TeacherDashboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [isUploadFormVisible, setIsUploadFormVisible] = useState(false);
 
   const [notification, setNotification] = useState({ message: "", type: "" });
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -96,22 +101,16 @@ export default function TeacherDashboard() {
 
   const handleUpload = (e) => {
     e.preventDefault();
-
     if (!user) {
       showNotification("User data not loaded. Please wait and try again.");
       return;
     }
-
-    // 🚨 Restrict to 2 projects max
     if (projects.length >= 2) {
       showNotification("You can only upload a maximum of 2 projects.");
       return;
     }
-
     setLoading(true);
-
     const projectData = { ...newProject, facultyName: user.fullName };
-
     createProject(projectData)
       .then(() => {
         showNotification("Project uploaded successfully!", "success");
@@ -122,6 +121,7 @@ export default function TeacherDashboard() {
           stream: "",
           domain: "",
         });
+        setIsUploadFormVisible(false); // Close form on success
         loadProjectsForCurrentUser(user);
       })
       .catch((err) => {
@@ -160,18 +160,18 @@ export default function TeacherDashboard() {
 
   if (initialLoading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <Loader className="w-10 h-10 text-white animate-spin" />
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
+        <Loader className="w-10 h-10 text-cyan-600 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-indigo-900 text-white p-4 sm:p-6 lg:p-8 relative">
+    <div className="min-h-screen bg-slate-100 text-gray-800">
       {notification.message && (
         <div
           className={`fixed top-5 right-5 z-50 flex items-center gap-3 p-4 rounded-lg shadow-lg ${
-            notification.type === "success" ? "bg-green-600" : "bg-red-600"
+            notification.type === "success" ? "bg-green-600 text-white" : "bg-red-600 text-white"
           }`}
         >
           {notification.type === "success" ? (
@@ -191,181 +191,204 @@ export default function TeacherDashboard() {
         />
       )}
 
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22 width=%2232%22 height=%2232%22 fill=%22none%22 stroke=%22rgb(148 163 184 / 0.05)%22%3e%3cpath d=%22m0 .5 32 32M32 .5 0 32%22/%3e%3c/svg%3e')]" />
-
-      <div className="relative max-w-7xl mx-auto z-10">
-        {/* ===== USE NAVBAR COMPONENT ===== */}
+      <div className="relative max-w-7xl mx-auto z-10 p-4 sm:p-6 lg:p-8">
         <Navbar user={user} handleLogout={handleLogout} />
 
-        {/* Upload Form */}
-        <section className="bg-slate-800/50 backdrop-blur-md border border-slate-700 p-6 rounded-2xl shadow-lg mb-12">
-          <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-            <Plus className="w-6 h-6 text-green-400" />
-            Upload a New Project
-          </h2>
-          <form
-            onSubmit={handleUpload}
-            className="grid grid-cols-1 md:grid-cols-2 gap-6"
-          >
-            <div className="md:col-span-2">
-              <input
-                type="text"
-                placeholder="Project Title"
-                value={newProject.projectTitle}
-                onChange={(e) =>
-                  setNewProject({ ...newProject, projectTitle: e.target.value })
-                }
-                className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:outline-none transition"
-                required
-              />
-            </div>
-            <div className="md:col-span-2">
-              <textarea
-                placeholder="Description"
-                value={newProject.description}
-                onChange={(e) =>
-                  setNewProject({ ...newProject, description: e.target.value })
-                }
-                className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:outline-none transition"
-                rows={4}
-                required
-              />
-            </div>
-            <input
-              type="text"
-              placeholder="Stream (e.g. CSE, ECE)"
-              value={newProject.stream}
-              onChange={(e) =>
-                setNewProject({ ...newProject, stream: e.target.value })
-              }
-              className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:outline-none transition"
-              required
-            />
-            <div className="relative">
-              <label
-                htmlFor="deadline"
-                className="text-slate-400 text-xs absolute top-[-10px] left-3 bg-slate-800/50 px-1"
-              >
-                Application Deadline
-              </label>
-              <input
-                id="deadline"
-                type="date"
-                value={newProject.applicationDeadline}
-                onChange={(e) =>
-                  setNewProject({
-                    ...newProject,
-                    applicationDeadline: e.target.value,
-                  })
-                }
-                className="w-full bg-slate-700/50 border border-slate-600 rounded-lg pl-4 pr-10 py-2 text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:outline-none transition"
-                required
-              />
-            </div>
-            <div className="relative">
-              <select
-                value={newProject.domain}
-                onChange={(e) =>
-                  setNewProject({ ...newProject, domain: e.target.value })
-                }
-                className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-purple-500 focus:outline-none transition"
-                required
-              >
-                <option value="">Select Domain</option>
-                <option>Analog Circuits</option>
-                <option>Digital Circuits</option>
-                <option>Semiconductor Devices</option>
-                <option>Wireless & Mobile Communication</option>
-                <option>Fiber-Optic Communication</option>
-                <option>Computer Networks</option>
-                <option>Digital Signal Processing (DSP)</option>
-                <option>Image & Video Processing</option>
-                <option>Embedded Systems</option>
-                <option>Internet of Things (IoT)</option>
-                <option>Electromagnetics & RF Engineering</option>
-                <option>Antennas & Wave Propagation</option>
-                <option>VLSI (Very Large Scale Integration)</option>
-                <option>Control Systems</option>
-                <option>Robotics and Automation</option>
-                <option>Power Electronics</option>
-                <option>Computer Architecture</option>
-                <option>Photonics and Optoelectronics</option>
-                <option>Information Theory</option>
-                <option>Biomedical Engineering</option>
-                <option>Quantum Computing</option>
-                <option>MEMS (Micro-Electro-Mechanical Systems)</option>
-                <option>Machine Learning & AI Hardware</option>
-                <option>Signal Integrity and High-Speed Design</option>
-                <option>Nanoelectronics</option>
-                <option>Terahertz Technology</option>
-                <option>Mixed Signal Design</option>
-                <option>Automotive Electronics</option>
-                <option>Sensor Networks</option>
-                <option>Radar Systems</option>
-                <option>Satellite Communication</option>
-                <option>Cyber-Physical Systems</option>
-                <option>Augmented & Virtual Reality Hardware</option>
-              </select>
-            </div>
+        <div className="mb-8">
+            <button
+                onClick={() => setIsUploadFormVisible(!isUploadFormVisible)}
+                className="w-full flex justify-between items-center p-4 bg-white rounded-xl shadow-lg border border-slate-200 hover:bg-slate-50 transition"
+            >
+                <div className="flex items-center gap-3">
+                    <Plus className="w-6 h-6 text-cyan-600" />
+                    <h2 className="text-xl font-bold text-gray-700">
+                        Upload a New Project
+                    </h2>
+                </div>
+                <motion.div
+                    animate={{ rotate: isUploadFormVisible ? 180 : 0 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    <ChevronDown className="w-6 h-6 text-gray-500" />
+                </motion.div>
+            </button>
+        </div>
 
-            <div className="md:col-span-2">
-              <button
-                type="submit"
-                disabled={loading || projects.length >= 2}
-                className="w-full flex items-center justify-center gap-2 
-    bg-gradient-to-r from-purple-600 to-pink-600 
-    hover:from-purple-700 hover:to-pink-700 text-white 
-    px-6 py-3 rounded-lg font-semibold shadow-md 
-    transition-transform transform hover:scale-105 
-    disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <>
-                    <Loader className="animate-spin w-5 h-5" /> Uploading...
-                  </>
-                ) : projects.length >= 2 ? (
-                  "Limit Reached (2 Projects)"
-                ) : (
-                  "Upload Project"
-                )}
-              </button>
-            </div>
-          </form>
-        </section>
+        <AnimatePresence>
+        {isUploadFormVisible && (
+            <motion.section
+                key="upload-form"
+                initial={{ height: 0, opacity: 0, marginTop: 0, marginBottom: 0 }}
+                animate={{ height: "auto", opacity: 1, marginTop: '-1.5rem', marginBottom: '3rem' }}
+                exit={{ height: 0, opacity: 0, marginTop: 0, marginBottom: 0 }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                className="overflow-hidden"
+            >
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-200 mt-6">
+                  <form onSubmit={handleUpload} className="space-y-6">
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Project Title</label>
+                      <input
+                        type="text"
+                        placeholder="e.g., Real-time EMG Signal Analysis"
+                        value={newProject.projectTitle}
+                        onChange={(e) =>
+                          setNewProject({ ...newProject, projectTitle: e.target.value })
+                        }
+                        className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Description</label>
+                      <textarea
+                        placeholder="Provide a detailed description of the project..."
+                        value={newProject.description}
+                        onChange={(e) =>
+                          setNewProject({ ...newProject, description: e.target.value })
+                        }
+                        className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
+                        rows={4}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                          <label className="text-sm font-medium text-gray-600">Stream</label>
+                          <input
+                            type="text"
+                            placeholder="e.g., ECE, CSE"
+                            value={newProject.stream}
+                            onChange={(e) =>
+                              setNewProject({ ...newProject, stream: e.target.value })
+                            }
+                            className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
+                            required
+                          />
+                        </div>
+                         <div>
+                          <label className="text-sm font-medium text-gray-600">Domain</label>
+                          <select
+                            value={newProject.domain}
+                            onChange={(e) =>
+                              setNewProject({ ...newProject, domain: e.target.value })
+                            }
+                            className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
+                            required
+                          >
+                            <option value="">Select Domain</option>
+                            <option>Analog Circuits</option>
+                            <option>Digital Circuits</option>
+                            <option>Semiconductor Devices</option>
+                            <option>Wireless & Mobile Communication</option>
+                            <option>Fiber-Optic Communication</option>
+                            <option>Computer Networks</option>
+                            <option>Digital Signal Processing (DSP)</option>
+                            <option>Image & Video Processing</option>
+                            <option>Embedded Systems</option>
+                            <option>Internet of Things (IoT)</option>
+                            <option>Electromagnetics & RF Engineering</option>
+                            <option>Antennas & Wave Propagation</option>
+                            <option>VLSI (Very Large Scale Integration)</option>
+                            <option>Control Systems</option>
+                            <option>Robotics and Automation</option>
+                            <option>Power Electronics</option>
+                            <option>Computer Architecture</option>
+                            <option>Photonics and Optoelectronics</option>
+                            <option>Information Theory</option>
+                            <option>Biomedical Engineering</option>
+                            <option>Quantum Computing</option>
+                            <option>MEMS (Micro-Electro-Mechanical Systems)</option>
+                            <option>Machine Learning & AI Hardware</option>
+                            <option>Signal Integrity and High-Speed Design</option>
+                            <option>Nanoelectronics</option>
+                            <option>Terahertz Technology</option>
+                            <option>Mixed Signal Design</option>
+                            <option>Automotive Electronics</option>
+                            <option>Sensor Networks</option>
+                            <option>Radar Systems</option>
+                            <option>Satellite Communication</option>
+                            <option>Cyber-Physical Systems</option>
+                            <option>Augmented & Virtual Reality Hardware</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-gray-600">Application Deadline</label>
+                          <input
+                            id="deadline"
+                            type="date"
+                            value={newProject.applicationDeadline}
+                            onChange={(e) =>
+                              setNewProject({
+                                ...newProject,
+                                applicationDeadline: e.target.value,
+                              })
+                            }
+                            className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
+                            required
+                          />
+                        </div>
+                    </div>
 
-        {/* Project List */}
+                    <div>
+                      <button
+                        type="submit"
+                        disabled={loading || projects.length >= 2}
+                        className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg shadow-md transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {loading ? (
+                          <>
+                            <Loader className="animate-spin w-5 h-5" /> Uploading...
+                          </>
+                        ) : projects.length >= 2 ? (
+                          "Limit Reached (2 Projects)"
+                        ) : (
+                          "Upload Project"
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+            </motion.section>
+        )}
+        </AnimatePresence>
+
         <section>
-          <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-            <BookOpen className="w-6 h-6 text-blue-400" />
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-3 text-gray-700">
+            <BookOpen className="w-6 h-6 text-cyan-600" />
             Your Projects
           </h2>
           {projects.length === 0 && !initialLoading ? (
-            <div className="text-center text-slate-400 bg-slate-800/50 p-10 rounded-2xl">
+            <div className="text-center text-gray-500 bg-white p-10 rounded-xl border border-slate-200">
               No projects uploaded yet. Start by adding one above! 📚
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {projects.map((p) => (
                 <div
                   key={p._id}
-                  className="bg-slate-800/40 backdrop-blur-md border border-slate-700 rounded-2xl p-6 shadow-lg hover:border-purple-500 transition-all duration-300 flex flex-col justify-between"
+                  className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 flex flex-col justify-between transition hover:shadow-cyan-100 hover:border-cyan-300"
                 >
                   <div>
-                    <button
-                      onClick={() =>
-                        navigate(`/teacher/update-project/${p._id}`)
-                      }
-                      className="ml-auto flex items-center justify-center gap-2 text-sm bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white px-3 py-2 rounded-md font-semibold transition"
-                    >
-                      ✏️ Edit
-                    </button>
-                    <h3 className="text-xl font-bold mb-2 text-white">
-                      {p.projectTitle}
-                    </h3>
-                    <p className="text-sm text-slate-300 mb-4 h-20 overflow-y-auto">
+                    <div className="flex justify-between items-start mb-2">
+                        <h3 className="text-xl font-bold text-gray-800 pr-4">
+                        {p.projectTitle}
+                        </h3>
+                        <button
+                        onClick={() =>
+                            navigate(`/teacher/update-project/${p._id}`)
+                        }
+                        className="flex-shrink-0 flex items-center gap-2 text-xs bg-amber-100 text-amber-800 hover:bg-amber-200 px-3 py-1 rounded-full font-semibold transition"
+                        >
+                        <Edit size={12} /> Edit
+                        </button>
+                    </div>
+                    
+                    <p className="text-sm text-gray-600 mb-4 h-20 overflow-y-auto">
                       {p.description}
                     </p>
-                    <div className="text-xs text-slate-400 space-y-2 border-t border-slate-700 pt-3 mt-3">
+                    <div className="text-xs text-gray-500 space-y-2 border-t border-slate-200 pt-3 mt-3">
                       <p>
                         <strong>Stream:</strong> {p.stream}
                       </p>
@@ -381,13 +404,13 @@ export default function TeacherDashboard() {
                   <div className="mt-6 flex flex-col sm:flex-row gap-3">
                     <button
                       onClick={() => handleViewApplications(p._id)}
-                      className="flex-1 flex items-center justify-center gap-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-3 py-2 rounded-md font-semibold transition"
+                      className="flex-1 flex items-center justify-center gap-2 text-sm bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-2 rounded-md font-semibold transition"
                     >
                       <Users className="w-4 h-4" /> Applications
                     </button>
                     <button
                       onClick={() => handleDeleteClick(p._id)}
-                      className="flex-1 flex items-center justify-center gap-2 text-sm bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white px-3 py-2 rounded-md font-semibold transition"
+                      className="flex-1 flex items-center justify-center gap-2 text-sm bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md font-semibold transition"
                     >
                       <Trash2 className="w-4 h-4" /> Delete
                     </button>
@@ -401,4 +424,3 @@ export default function TeacherDashboard() {
     </div>
   );
 }
-//comment

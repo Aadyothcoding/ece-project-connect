@@ -61,63 +61,62 @@ export default function StudentProfile() {
 
   if (loading || !profile) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <Loader className="w-10 h-10 text-white animate-spin" />
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
+        <Loader className="w-10 h-10 text-cyan-600 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-indigo-900 text-white p-4 sm:p-6 lg:p-8 relative">
+    <div className="min-h-screen bg-slate-100 text-gray-800">
        {notification.message && (
-        <div className={`fixed top-5 right-5 z-50 flex items-center gap-3 p-4 rounded-lg shadow-lg ${notification.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+        <div className={`fixed top-5 right-5 z-50 flex items-center gap-3 p-4 rounded-lg shadow-lg ${notification.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
           {notification.type === 'success' ? <CheckCircle className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
           <span>{notification.message}</span>
         </div>
       )}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22 width=%2232%22 height=%2232%22 fill=%22none%22 stroke=%22rgb(148 163 184 / 0.05)%22%3e%3cpath d=%22m0 .5 32 32M32 .5 0 32%22/%3e%3c/svg%3e')]" />
-      <div className="relative max-w-4xl mx-auto z-10">
+      <div className="relative max-w-4xl mx-auto z-10 p-4 sm:p-6 lg:p-8">
         <Navbar user={profile} handleLogout={handleLogout} />
         
-        <section className="bg-slate-800/50 backdrop-blur-md border border-slate-700 p-8 rounded-2xl shadow-lg">
+        <section className="bg-white p-8 rounded-xl shadow-lg border border-slate-200">
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="flex items-center gap-6">
+            <div className="flex flex-col sm:flex-row items-center gap-6">
               <img
-                src={profile.profilePic || `https://placehold.co/120x120/475569/E2E8F0?text=${profile.fullName.charAt(0)}`}
+                src={profile.profilePic || `https://placehold.co/120x120/E0E7FF/4F46E5?text=${profile.fullName.charAt(0)}`}
                 alt="Profile"
-                className="w-24 h-24 rounded-full object-cover border-4 border-slate-700"
+                className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md"
               />
-              <div className="flex-grow">
-                <h2 className="text-3xl font-bold">{profile.fullName}</h2>
-                <p className="text-slate-400">{profile.email}</p>
+              <div className="flex-grow text-center sm:text-left">
+                <h2 className="text-3xl font-bold text-gray-800">{profile.fullName}</h2>
+                <p className="text-gray-500">{profile.email}</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-400">Registration Number</label>
-                <input type="text" name="regNo" value={profile.regNo || "Not set"} disabled className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-slate-400 cursor-not-allowed" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-slate-200">
+               <div>
+                <label className="text-sm font-medium text-gray-600">Registration Number</label>
+                <input type="text" name="regNo" value={profile.regNo || "Not set"} disabled className="w-full mt-1 px-4 py-2 bg-slate-200 border border-slate-300 rounded-lg text-gray-500 cursor-not-allowed" />
               </div>
-               <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-400">Department</label>
-                <input type="text" name="department" value={profile.department || ""} onChange={handleChange} className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition" />
+               <div>
+                <label className="text-sm font-medium text-gray-600">Department</label>
+                <input type="text" name="department" value={profile.department || ""} onChange={handleChange} className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition" />
               </div>
-              <div className="md:col-span-2 space-y-1">
-                <label className="text-sm font-medium text-slate-400">Profile Picture URL</label>
-                <input type="text" name="profilePic" value={profile.profilePic || ""} onChange={handleChange} className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition" />
+              <div className="md:col-span-2">
+                <label className="text-sm font-medium text-gray-600">Profile Picture URL</label>
+                <input type="text" name="profilePic" value={profile.profilePic || ""} onChange={handleChange} className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition" />
               </div>
-              <div className="md:col-span-2 space-y-1">
-                <label className="text-sm font-medium text-slate-400">Skills (comma-separated)</label>
-                <input type="text" name="skills" value={profile.skills || ""} onChange={handleChange} className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition" />
+              <div className="md:col-span-2">
+                <label className="text-sm font-medium text-gray-600">Skills (comma-separated)</label>
+                <input type="text" name="skills" value={profile.skills || ""} onChange={handleChange} className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition" />
               </div>
-              <div className="md:col-span-2 space-y-1">
-                <label className="text-sm font-medium text-slate-400">Resume URL</label>
-                <input type="text" name="resumeUrl" value={profile.resumeUrl || ""} onChange={handleChange} className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition" />
+              <div className="md:col-span-2">
+                <label className="text-sm font-medium text-gray-600">Resume URL</label>
+                <input type="text" name="resumeUrl" value={profile.resumeUrl || ""} onChange={handleChange} className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition" />
               </div>
             </div>
 
             <div className="pt-4 flex justify-end">
-              <button type="submit" disabled={saving} className="w-full md:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-6 py-3 rounded-lg font-semibold shadow-md transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+              <button type="submit" disabled={saving} className="w-full md:w-auto flex items-center justify-center gap-2 py-3 px-6 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg shadow-md transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
                 {saving ? <><Loader className="animate-spin w-5 h-5" /> Saving...</> : <><Save className="w-5 h-5" /> Save Changes</>}
               </button>
             </div>

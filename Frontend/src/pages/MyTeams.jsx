@@ -6,10 +6,10 @@ import {
   logoutUser,
   removeTeamMember,
   addTeamMember,
-  searchStudentByRegNo,
+  searchStudents, // Assuming search is by RegNo
 } from "../api";
 import { toast, Toaster } from "react-hot-toast";
-import { Loader, Users, Inbox, X, Plus } from "lucide-react";
+import { Loader, Users, Inbox, X, Plus, Search } from "lucide-react";
 import Navbar from "../components/Navbar";
 
 export default function MyTeams() {
@@ -21,13 +21,14 @@ export default function MyTeams() {
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [searchRegNo, setSearchRegNo] = useState("");
   const [searchedStudent, setSearchedStudent] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
 
   const fetchMyTeams = useCallback((currentUser) => {
     if (!currentUser) return;
     setLoading(true);
     getApprovedTeams()
       .then((res) => {
-        // Filter teams to show only those belonging to the current teacher
         const filteredTeams = res.data.teams.filter(
           (team) => team.facultyName === currentUser.fullName
         );
@@ -57,78 +58,95 @@ export default function MyTeams() {
     try {
       await logoutUser();
       navigate("/login");
-      // eslint-disable-next-line no-unused-vars
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
       navigate("/login");
     }
   };
+
   const handleRemoveMember = async (teamId, memberId) => {
-    try {
-      const res = await removeTeamMember(teamId, memberId);
-      toast.success("Member removed successfully");
-      // update state with new team
-      setMyTeams((prev) =>
-        prev.map((team) => (team._id === teamId ? res.data.team : team))
-      );
-    } catch (err) {
-      toast.error("Failed to remove member");
-      console.error(err);
+    if (window.confirm("Are you sure you want to remove this member?")) {
+        toast.promise(
+            removeTeamMember(teamId, memberId),
+            {
+                loading: 'Removing member...',
+                success: (res) => {
+                    setMyTeams((prev) =>
+                        prev.map((team) => (team._id === teamId ? res.data.team : team))
+                    );
+                    return "Member removed successfully";
+                },
+                error: "Failed to remove member",
+            }
+        );
     }
   };
+
   const handleSearchStudent = async () => {
+    if (!searchRegNo.trim()) return;
+    setIsSearching(true);
     try {
-      const res = await searchStudentByRegNo(searchRegNo);
-      setSearchedStudent(res.data.student);
+      // Assuming searchStudents can also search by registration number
+      const res = await searchStudents(searchRegNo);
+      if (res.data.length > 0) {
+        setSearchedStudent(res.data[0]);
+      } else {
+        setSearchedStudent(null);
+        toast.error("Student not found.");
+      }
     } catch (err) {
       setSearchedStudent(null);
       toast.error(err.response?.data?.message || "Student not found");
+    } finally {
+        setIsSearching(false);
     }
   };
 
   const handleAddMember = async () => {
     if (!searchedStudent) return;
-    try {
-      const res = await addTeamMember(selectedTeam._id, searchedStudent._id);
-      toast.success("Member added successfully");
-      setMyTeams((prev) =>
-        prev.map((team) =>
-          team._id === selectedTeam._id ? res.data.team : team
-        )
-      );
-      setShowModal(false);
-      setSearchedStudent(null);
-      setSearchRegNo("");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to add member");
-    }
+    setIsAdding(true);
+    toast.promise(
+        addTeamMember(selectedTeam._id, searchedStudent._id),
+        {
+            loading: 'Adding member...',
+            success: (res) => {
+                setMyTeams((prev) =>
+                    prev.map((team) =>
+                    team._id === selectedTeam._id ? res.data.team : team
+                    )
+                );
+                setShowModal(false);
+                setSearchedStudent(null);
+                setSearchRegNo("");
+                return "Member added successfully";
+            },
+            error: (err) => err.response?.data?.message || "Failed to add member",
+        }
+    ).finally(() => setIsAdding(false));
   };
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <Loader className="w-10 h-10 text-white animate-spin" />
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
+        <Loader className="w-10 h-10 text-cyan-600 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-indigo-900 text-white p-4 sm:p-6 lg:p-8 relative">
-      <Toaster
-        position="top-right"
-        toastOptions={{ className: "bg-slate-700 text-white" }}
-      />
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22 width=%2232%22 height=%2232%22 fill=%22none%22 stroke=%22rgb(148 163 184 / 0.05)%22%3e%3cpath d=%22m0 .5 32 32M32 .5 0 32%22/%3e%3c/svg%3e')]" />
-      <div className="relative max-w-6xl mx-auto z-10">
+    <div className="min-h-screen bg-slate-100 text-gray-800">
+      <Toaster position="top-right" />
+      <div className="relative max-w-6xl mx-auto z-10 p-4 sm:p-6 lg:p-8">
         <Navbar user={user} handleLogout={handleLogout} />
 
         <section>
-          <h2 className="text-3xl font-bold mb-8 flex items-center gap-3">
-            <Users className="w-8 h-8 text-purple-400" />
+          <h2 className="text-3xl font-bold mb-8 flex items-center gap-3 text-gray-700">
+            <Users className="w-8 h-8 text-cyan-600" />
             My Approved Teams
           </h2>
           {myTeams.length === 0 ? (
-            <div className="text-center text-slate-400 bg-slate-800/50 p-12 rounded-2xl flex flex-col items-center gap-4">
-              <Inbox className="w-16 h-16 text-slate-500" />
+            <div className="text-center text-gray-500 bg-white p-12 rounded-xl border border-slate-200 flex flex-col items-center gap-4">
+              <Inbox className="w-16 h-16 text-slate-400" />
               <h3 className="text-2xl font-bold">No Approved Teams Yet</h3>
               <p>When you approve an application, the team will appear here.</p>
             </div>
@@ -137,94 +155,107 @@ export default function MyTeams() {
               {myTeams.map((team) => (
                 <div
                   key={team._id}
-                  className="bg-slate-800/60 border border-slate-700 rounded-lg p-6"
+                  className="bg-white border border-slate-200 rounded-xl shadow-lg p-6 flex flex-col"
                 >
-                  <h3 className="text-xl font-bold text-purple-300 mb-2">
-                    {team.projectId.projectTitle}
-                  </h3>
-                  <p className="text-sm text-slate-400 mb-4 capitalize">
-                    {team.applicationType} Project
-                  </p>
-                  <div className="border-t border-slate-700 pt-4">
-                    <h4 className="font-semibold mb-2">Members:</h4>
-                    <ul className="space-y-2">
-                      {team.members.map((member) => (
-                        <li
-                          key={member.studentId._id}
-                          className="flex items-center justify-between text-sm text-slate-300"
-                        >
-                          <div>
-                            <p className="font-medium">{member.name}</p>
-                            <p className="text-xs text-slate-500">
-                              {member.regNo}
-                            </p>
-                          </div>
-                          <button
-                            onClick={() =>
-                              handleRemoveMember(team._id, member.studentId._id)
-                            }
-                            className="text-red-400 hover:text-red-600"
+                  <div className="flex-grow">
+                    <h3 className="text-xl font-bold text-cyan-700 mb-2">
+                      {team.projectId.projectTitle}
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-4 capitalize">
+                      {team.applicationType} Project
+                    </p>
+                    <div className="border-t border-slate-200 pt-4">
+                      <h4 className="font-semibold mb-2 text-gray-600">Members:</h4>
+                      <ul className="space-y-3">
+                        {team.members.map((member) => (
+                          <li
+                            key={member._id}
+                            className="flex items-center justify-between text-sm text-gray-700"
                           >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                    <button
-                      onClick={() => {
-                        setSelectedTeam(team);
-                        setShowModal(true);
-                      }}
-                      className="mt-4 flex items-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm font-medium"
-                    >
-                      <Plus className="w-4 h-4" /> Add Member
-                    </button>
+                            <div>
+                              <p className="font-medium">{member.name}</p>
+                              <p className="text-xs text-gray-500">
+                                {member.regNo}
+                              </p>
+                            </div>
+                            <button
+                              onClick={() =>
+                                handleRemoveMember(team._id, member.studentId)
+                              }
+                              className="p-1 rounded-full text-gray-400 hover:bg-red-100 hover:text-red-600 transition"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
+                  <button
+                    onClick={() => {
+                      setSelectedTeam(team);
+                      setShowModal(true);
+                    }}
+                    className="mt-6 w-full flex items-center justify-center gap-2 px-3 py-2 bg-cyan-50 text-cyan-700 hover:bg-cyan-100 rounded-lg text-sm font-semibold border border-cyan-200 transition"
+                  >
+                    <Plus className="w-4 h-4" /> Add Member
+                  </button>
                 </div>
               ))}
             </div>
           )}
         </section>
       </div>
-      {/* Popup Modal */}
+
       {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50">
-          <div className="bg-slate-800 p-6 rounded-xl w-96">
-            <h3 className="text-xl font-bold mb-4">Add Member</h3>
-            <input
-              type="text"
-              placeholder="Enter Register No"
-              value={searchRegNo}
-              onChange={(e) => setSearchRegNo(e.target.value)}
-              className="w-full px-3 py-2 rounded bg-slate-700 text-white mb-3"
-            />
-            <button
-              onClick={handleSearchStudent}
-              className="bg-blue-600 px-4 py-2 rounded text-white"
-            >
-              Search
-            </button>
+        <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
+          <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md text-gray-800">
+            <h3 className="text-xl font-bold mb-4">Add New Member</h3>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="Enter Student Registration No."
+                value={searchRegNo}
+                onChange={(e) => setSearchRegNo(e.target.value)}
+                className="flex-grow px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
+              />
+              <button
+                onClick={handleSearchStudent}
+                disabled={isSearching}
+                className="p-2 bg-cyan-600 hover:bg-cyan-700 rounded-lg text-white disabled:opacity-50"
+              >
+                {isSearching ? <Loader className="w-5 h-5 animate-spin"/> : <Search className="w-5 h-5" />}
+              </button>
+            </div>
 
             {searchedStudent && (
-              <div className="mt-4 p-3 bg-slate-700 rounded">
-                <p>
-                  {searchedStudent.fullName} ({searchedStudent.regNo})
-                </p>
+              <div className="mt-4 p-4 bg-slate-100 rounded-lg flex items-center justify-between">
+                <div>
+                    <p className="font-semibold">{searchedStudent.fullName}</p>
+                    <p className="text-sm text-gray-500">{searchedStudent.regNo}</p>
+                </div>
                 <button
                   onClick={handleAddMember}
-                  className="bg-green-500 px-4 py-1 mt-2 rounded text-white"
+                  disabled={isAdding}
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white text-sm font-semibold disabled:opacity-50"
                 >
-                  Add to Team
+                  {isAdding ? 'Adding...' : 'Add to Team'}
                 </button>
               </div>
             )}
 
-            <button
-              onClick={() => setShowModal(false)}
-              className="mt-4 text-red-400"
-            >
-              Close
-            </button>
+            <div className="mt-6 flex justify-end">
+                <button
+                onClick={() => {
+                    setShowModal(false);
+                    setSearchedStudent(null);
+                    setSearchRegNo("");
+                }}
+                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md text-sm font-semibold"
+                >
+                Close
+                </button>
+            </div>
           </div>
         </div>
       )}
