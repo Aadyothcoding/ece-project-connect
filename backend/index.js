@@ -12,6 +12,7 @@ import studentRoutes from "./routes/studentprojectapply.routes.js";
 import userSearchRoutes from "./routes/usersearch.routes.js";
 import teamApprovedRoutes from "./routes/teamapproved.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
+import infoRoutes from "./routes/info.routes.js";
 
 // Load environment variables
 dotenv.config();
@@ -50,6 +51,7 @@ app.use("/api/student", studentRoutes);
 app.use("/api/usersearch", userSearchRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/team-approved", teamApprovedRoutes);
+app.use("/api/info", infoRoutes);
 
 // Catch-all for unknown routes
 app.all("*", (req, res) => {
