@@ -45,8 +45,8 @@ export const removeTeamMember = (teamId, memberId) =>
   API.delete(`/team-approved/${teamId}/members/${memberId}`);
 export const searchStudentByRegNo = (regNo) =>
   API.get(`/team-approved/search-student?regNo=${regNo}`);
-
 export const addTeamMember = (teamId, studentId) =>
   API.post(`/team-approved/${teamId}/members`, { studentId });
 
-
+// --- INFO ROUTE ---
+export const getStudentInfo = (studentId) => API.get(`/info/${studentId}`);
