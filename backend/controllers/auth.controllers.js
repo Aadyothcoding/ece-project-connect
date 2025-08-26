@@ -57,8 +57,8 @@ export const signup = async (req, res) => {
     });
 
     try {
-      await sendVerificationEmail(email, fullName, rawToken);
-      await sendWelcomeEmail(email, fullName);
+      //await sendVerificationEmail(email, fullName, rawToken);
+      //await sendWelcomeEmail(email, fullName);
 
       res.status(201).json({
         _id: newUser._id,
