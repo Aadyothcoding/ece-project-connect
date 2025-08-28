@@ -5,6 +5,7 @@ import {
   deleteProject,
   getCurrentUser,
   logoutUser,
+  getTeacherProjects,
 } from "../api";
 import { useNavigate } from "react-router-dom";
 import {
@@ -67,14 +68,10 @@ export default function TeacherDashboard() {
     setTimeout(() => setNotification({ message: "", type: "" }), 4000);
   };
 
-  const loadProjectsForCurrentUser = useCallback((currentUser) => {
-    if (!currentUser) return;
-    getAllProjects()
+  const loadProjectsForCurrentUser = useCallback(() => {
+    getTeacherProjects()
       .then((res) => {
-        const userProjects = res.data.filter(
-          (project) => project.facultyName === currentUser.fullName
-        );
-        setProjects(userProjects);
+        setProjects(res.data);
       })
       .catch((err) => {
         console.error("Error loading projects:", err);
@@ -171,7 +168,9 @@ export default function TeacherDashboard() {
       {notification.message && (
         <div
           className={`fixed top-5 right-5 z-50 flex items-center gap-3 p-4 rounded-lg shadow-lg ${
-            notification.type === "success" ? "bg-green-600 text-white" : "bg-red-600 text-white"
+            notification.type === "success"
+              ? "bg-green-600 text-white"
+              : "bg-red-600 text-white"
           }`}
         >
           {notification.type === "success" ? (
@@ -195,163 +194,191 @@ export default function TeacherDashboard() {
         <Navbar user={user} handleLogout={handleLogout} />
 
         <div className="mb-8">
-            <button
-                onClick={() => setIsUploadFormVisible(!isUploadFormVisible)}
-                className="w-full flex justify-between items-center p-4 bg-white rounded-xl shadow-lg border border-slate-200 hover:bg-slate-50 transition"
+          <button
+            onClick={() => setIsUploadFormVisible(!isUploadFormVisible)}
+            className="w-full flex justify-between items-center p-4 bg-white rounded-xl shadow-lg border border-slate-200 hover:bg-slate-50 transition"
+          >
+            <div className="flex items-center gap-3">
+              <Plus className="w-6 h-6 text-cyan-600" />
+              <h2 className="text-xl font-bold text-gray-700">
+                Upload a New Project
+              </h2>
+            </div>
+            <motion.div
+              animate={{ rotate: isUploadFormVisible ? 180 : 0 }}
+              transition={{ duration: 0.3 }}
             >
-                <div className="flex items-center gap-3">
-                    <Plus className="w-6 h-6 text-cyan-600" />
-                    <h2 className="text-xl font-bold text-gray-700">
-                        Upload a New Project
-                    </h2>
-                </div>
-                <motion.div
-                    animate={{ rotate: isUploadFormVisible ? 180 : 0 }}
-                    transition={{ duration: 0.3 }}
-                >
-                    <ChevronDown className="w-6 h-6 text-gray-500" />
-                </motion.div>
-            </button>
+              <ChevronDown className="w-6 h-6 text-gray-500" />
+            </motion.div>
+          </button>
         </div>
 
         <AnimatePresence>
-        {isUploadFormVisible && (
+          {isUploadFormVisible && (
             <motion.section
-                key="upload-form"
-                initial={{ height: 0, opacity: 0, marginTop: 0, marginBottom: 0 }}
-                animate={{ height: "auto", opacity: 1, marginTop: '-1.5rem', marginBottom: '3rem' }}
-                exit={{ height: 0, opacity: 0, marginTop: 0, marginBottom: 0 }}
-                transition={{ duration: 0.4, ease: "easeInOut" }}
-                className="overflow-hidden"
+              key="upload-form"
+              initial={{ height: 0, opacity: 0, marginTop: 0, marginBottom: 0 }}
+              animate={{
+                height: "auto",
+                opacity: 1,
+                marginTop: "-1.5rem",
+                marginBottom: "3rem",
+              }}
+              exit={{ height: 0, opacity: 0, marginTop: 0, marginBottom: 0 }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              className="overflow-hidden"
             >
-                <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-200 mt-6">
-                  <form onSubmit={handleUpload} className="space-y-6">
+              <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-200 mt-6">
+                <form onSubmit={handleUpload} className="space-y-6">
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">
+                      Project Title
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g., Real-time EMG Signal Analysis"
+                      value={newProject.projectTitle}
+                      onChange={(e) =>
+                        setNewProject({
+                          ...newProject,
+                          projectTitle: e.target.value,
+                        })
+                      }
+                      className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">
+                      Description
+                    </label>
+                    <textarea
+                      placeholder="Provide a detailed description of the project..."
+                      value={newProject.description}
+                      onChange={(e) =>
+                        setNewProject({
+                          ...newProject,
+                          description: e.target.value,
+                        })
+                      }
+                      className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
+                      rows={4}
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Project Title</label>
+                      <label className="text-sm font-medium text-gray-600">
+                        Stream
+                      </label>
                       <input
                         type="text"
-                        placeholder="e.g., Real-time EMG Signal Analysis"
-                        value={newProject.projectTitle}
+                        placeholder="e.g., ECE, CSE"
+                        value={newProject.stream}
                         onChange={(e) =>
-                          setNewProject({ ...newProject, projectTitle: e.target.value })
+                          setNewProject({
+                            ...newProject,
+                            stream: e.target.value,
+                          })
                         }
                         className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
                         required
                       />
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Description</label>
-                      <textarea
-                        placeholder="Provide a detailed description of the project..."
-                        value={newProject.description}
+                      <label className="text-sm font-medium text-gray-600">
+                        Domain
+                      </label>
+                      <select
+                        value={newProject.domain}
                         onChange={(e) =>
-                          setNewProject({ ...newProject, description: e.target.value })
+                          setNewProject({
+                            ...newProject,
+                            domain: e.target.value,
+                          })
                         }
                         className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
-                        rows={4}
                         required
-                      />
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                          <label className="text-sm font-medium text-gray-600">Stream</label>
-                          <input
-                            type="text"
-                            placeholder="e.g., ECE, CSE"
-                            value={newProject.stream}
-                            onChange={(e) =>
-                              setNewProject({ ...newProject, stream: e.target.value })
-                            }
-                            className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
-                            required
-                          />
-                        </div>
-                         <div>
-                          <label className="text-sm font-medium text-gray-600">Domain</label>
-                          <select
-                            value={newProject.domain}
-                            onChange={(e) =>
-                              setNewProject({ ...newProject, domain: e.target.value })
-                            }
-                            className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
-                            required
-                          >
-                            <option value="">Select Domain</option>
-                            <option>Analog Circuits</option>
-                            <option>Digital Circuits</option>
-                            <option>Semiconductor Devices</option>
-                            <option>Wireless & Mobile Communication</option>
-                            <option>Fiber-Optic Communication</option>
-                            <option>Computer Networks</option>
-                            <option>Digital Signal Processing (DSP)</option>
-                            <option>Image & Video Processing</option>
-                            <option>Embedded Systems</option>
-                            <option>Internet of Things (IoT)</option>
-                            <option>Electromagnetics & RF Engineering</option>
-                            <option>Antennas & Wave Propagation</option>
-                            <option>VLSI (Very Large Scale Integration)</option>
-                            <option>Control Systems</option>
-                            <option>Robotics and Automation</option>
-                            <option>Power Electronics</option>
-                            <option>Computer Architecture</option>
-                            <option>Photonics and Optoelectronics</option>
-                            <option>Information Theory</option>
-                            <option>Biomedical Engineering</option>
-                            <option>Quantum Computing</option>
-                            <option>MEMS (Micro-Electro-Mechanical Systems)</option>
-                            <option>Machine Learning & AI Hardware</option>
-                            <option>Signal Integrity and High-Speed Design</option>
-                            <option>Nanoelectronics</option>
-                            <option>Terahertz Technology</option>
-                            <option>Mixed Signal Design</option>
-                            <option>Automotive Electronics</option>
-                            <option>Sensor Networks</option>
-                            <option>Radar Systems</option>
-                            <option>Satellite Communication</option>
-                            <option>Cyber-Physical Systems</option>
-                            <option>Augmented & Virtual Reality Hardware</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-gray-600">Application Deadline</label>
-                          <input
-                            id="deadline"
-                            type="date"
-                            value={newProject.applicationDeadline}
-                            onChange={(e) =>
-                              setNewProject({
-                                ...newProject,
-                                applicationDeadline: e.target.value,
-                              })
-                            }
-                            className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
-                            required
-                          />
-                        </div>
-                    </div>
-
-                    <div>
-                      <button
-                        type="submit"
-                        disabled={loading || projects.length >= 2}
-                        className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg shadow-md transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {loading ? (
-                          <>
-                            <Loader className="animate-spin w-5 h-5" /> Uploading...
-                          </>
-                        ) : projects.length >= 2 ? (
-                          "Limit Reached (2 Projects)"
-                        ) : (
-                          "Upload Project"
-                        )}
-                      </button>
+                        <option value="">Select Domain</option>
+                        <option>Analog Circuits</option>
+                        <option>Digital Circuits</option>
+                        <option>Semiconductor Devices</option>
+                        <option>Wireless & Mobile Communication</option>
+                        <option>Fiber-Optic Communication</option>
+                        <option>Computer Networks</option>
+                        <option>Digital Signal Processing (DSP)</option>
+                        <option>Image & Video Processing</option>
+                        <option>Embedded Systems</option>
+                        <option>Internet of Things (IoT)</option>
+                        <option>Electromagnetics & RF Engineering</option>
+                        <option>Antennas & Wave Propagation</option>
+                        <option>VLSI (Very Large Scale Integration)</option>
+                        <option>Control Systems</option>
+                        <option>Robotics and Automation</option>
+                        <option>Power Electronics</option>
+                        <option>Computer Architecture</option>
+                        <option>Photonics and Optoelectronics</option>
+                        <option>Information Theory</option>
+                        <option>Biomedical Engineering</option>
+                        <option>Quantum Computing</option>
+                        <option>MEMS (Micro-Electro-Mechanical Systems)</option>
+                        <option>Machine Learning & AI Hardware</option>
+                        <option>Signal Integrity and High-Speed Design</option>
+                        <option>Nanoelectronics</option>
+                        <option>Terahertz Technology</option>
+                        <option>Mixed Signal Design</option>
+                        <option>Automotive Electronics</option>
+                        <option>Sensor Networks</option>
+                        <option>Radar Systems</option>
+                        <option>Satellite Communication</option>
+                        <option>Cyber-Physical Systems</option>
+                        <option>Augmented & Virtual Reality Hardware</option>
+                      </select>
                     </div>
-                  </form>
-                </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">
+                        Application Deadline
+                      </label>
+                      <input
+                        id="deadline"
+                        type="date"
+                        value={newProject.applicationDeadline}
+                        onChange={(e) =>
+                          setNewProject({
+                            ...newProject,
+                            applicationDeadline: e.target.value,
+                          })
+                        }
+                        className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <button
+                      type="submit"
+                      disabled={loading || projects.length >= 2}
+                      className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg shadow-md transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {loading ? (
+                        <>
+                          <Loader className="animate-spin w-5 h-5" />{" "}
+                          Uploading...
+                        </>
+                      ) : projects.length >= 2 ? (
+                        "Limit Reached (2 Projects)"
+                      ) : (
+                        "Upload Project"
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
             </motion.section>
-        )}
+          )}
         </AnimatePresence>
 
         <section>
@@ -372,19 +399,19 @@ export default function TeacherDashboard() {
                 >
                   <div>
                     <div className="flex justify-between items-start mb-2">
-                        <h3 className="text-xl font-bold text-gray-800 pr-4">
+                      <h3 className="text-xl font-bold text-gray-800 pr-4">
                         {p.projectTitle}
-                        </h3>
-                        <button
+                      </h3>
+                      <button
                         onClick={() =>
-                            navigate(`/teacher/update-project/${p._id}`)
+                          navigate(`/teacher/update-project/${p._id}`)
                         }
                         className="flex-shrink-0 flex items-center gap-2 text-xs bg-amber-100 text-amber-800 hover:bg-amber-200 px-3 py-1 rounded-full font-semibold transition"
-                        >
+                      >
                         <Edit size={12} /> Edit
-                        </button>
+                      </button>
                     </div>
-                    
+
                     <p className="text-sm text-gray-600 mb-4 h-20 overflow-y-auto">
                       {p.description}
                     </p>
