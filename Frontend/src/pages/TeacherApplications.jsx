@@ -4,6 +4,8 @@ import {
   getApplicationsForProject,
   approveApplication,
   rejectApplication,
+  getCurrentUser,
+  logoutUser,
 } from "../api";
 import { toast, Toaster } from "react-hot-toast";
 import {
@@ -24,6 +26,13 @@ export default function TeacherApplications() {
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    getCurrentUser()
+      .then((res) => setUser(res.data))
+      .catch(() => setUser(null));
+  }, []);
 
   const fetchApplications = useCallback(() => {
     setLoading(true);
@@ -93,14 +102,23 @@ export default function TeacherApplications() {
         toastOptions={{ className: "bg-slate-700 text-white" }}
       />
       <div className="relative max-w-7xl mx-auto z-10 p-4 sm:p-6 lg:p-8">
-        <Navbar user={null} />
+        <Navbar
+          user={user}
+          handleLogout={() => {
+            logoutUser();
+            navigate("/login"); // redirect after logout
+          }}
+        />
+
         <div className="mb-8">
           <button
             onClick={() => navigate("/teacher-dashboard")}
             className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl shadow-lg border border-slate-200 hover:bg-slate-50 transition mb-4"
           >
             <ArrowLeft className="w-5 h-5 text-cyan-600" />
-            <span className="font-semibold text-gray-700">Back to Dashboard</span>
+            <span className="font-semibold text-gray-700">
+              Back to Dashboard
+            </span>
           </button>
           <h1 className="text-3xl font-bold flex items-center gap-3 text-gray-700 mb-2">
             <FileText className="w-8 h-8 text-cyan-600" />

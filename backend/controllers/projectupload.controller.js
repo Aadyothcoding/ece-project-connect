@@ -1,5 +1,7 @@
 // controllers/projectupload.controller.js
 import Project from "../models/projectupload.models.js";
+import StudentProjectApply from "../models/studentprojectapply.models.js";
+import TeamApproved from "../models/teamapproved.model.js";
 
 /**
  * @desc    Create a new project
@@ -40,14 +42,24 @@ export const createProject = async (req, res) => {
 };
 
 /**
- * @desc    Get all projects (for student dashboard)
+ * @desc    Get all available projects (exclude those already applied/approved)
  * @route   GET /api/projects
- * @access  Private
+ * @access  Private (Student)
  */
 export const getAllProjects = async (req, res) => {
   try {
-    // Find all projects and sort by the most recently created
-    const projects = await Project.find().sort({ createdAt: -1 });
+    // 1. Get all projectIds from TeamApproved and StudentProjectApply
+    const approvedProjects = await TeamApproved.distinct("projectId");
+    const appliedProjects = await StudentProjectApply.distinct("projectId");
+
+    // 2. Merge them into one exclusion list
+    const excludedIds = [...new Set([...approvedProjects, ...appliedProjects])];
+
+    // 3. Find projects not in excludedIds
+    const projects = await Project.find({
+      _id: { $nin: excludedIds },
+    }).sort({ createdAt: -1 });
+
     res.status(200).json(projects);
   } catch (error) {
     console.error("Error in getAllProjects:", error.message);
@@ -128,13 +140,45 @@ export const updateProject = async (req, res) => {
  * @route   DELETE /api/projects/:id
  * @access  Private (Teacher)
  */
+// export const deleteProject = async (req, res) => {
+//   try {
+//     const deletedProject = await Project.findByIdAndDelete(req.params.id);
+//     if (!deletedProject) {
+//       return res.status(404).json({ message: "Project not found" });
+//     }
+//     res.status(200).json({ message: "Project deleted successfully" });
+//   } catch (error) {
+//     console.error("Error in deleteProject:", error.message);
+//     res
+//       .status(500)
+//       .json({ message: "Error deleting project", error: error.message });
+//   }
+// };
+
+/**
+ * @desc    Delete a project + cleanup related applications & teams
+ * @route   DELETE /api/projects/:id
+ * @access  Private (Teacher)
+ */
 export const deleteProject = async (req, res) => {
   try {
-    const deletedProject = await Project.findByIdAndDelete(req.params.id);
+    const projectId = req.params.id;
+
+    // Delete the project itself
+    const deletedProject = await Project.findByIdAndDelete(projectId);
     if (!deletedProject) {
       return res.status(404).json({ message: "Project not found" });
     }
-    res.status(200).json({ message: "Project deleted successfully" });
+
+    // Delete all student applications linked to this project
+    await StudentProjectApply.deleteMany({ projectId });
+
+    // Delete all approved teams linked to this project
+    await TeamApproved.deleteMany({ projectId });
+
+    res.status(200).json({
+      message: "Project and related applications/teams deleted successfully",
+    });
   } catch (error) {
     console.error("Error in deleteProject:", error.message);
     res

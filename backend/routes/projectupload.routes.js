@@ -6,6 +6,7 @@ import {
   getProjectById,
   updateProject,
   deleteProject,
+  getProjectsByTeacher,
 } from "../controllers/projectupload.controller.js";
 import { validateProjectData } from "../middlewares/projectupload.middleware.js";
 import { protectRoute } from "../middlewares/auth.middlewares.js";
@@ -13,18 +14,20 @@ import { protectRoute } from "../middlewares/auth.middlewares.js";
 const router = express.Router();
 
 // POST - create new project
-router.post("/", protectRoute,validateProjectData, createProject);
+router.post("/", protectRoute, validateProjectData, createProject);
 
 // GET - fetch all projects
-router.get("/", protectRoute,getAllProjects);
+router.get("/", protectRoute, getAllProjects);
+
+router.get("/my-projects", protectRoute, getProjectsByTeacher);
 
 // GET - fetch single project by ID
-router.get("/:id", protectRoute,getProjectById);
+router.get("/:id", protectRoute, getProjectById);
 
 // PUT - update project
-router.put("/:id", protectRoute,validateProjectData, updateProject);
+router.put("/:id", protectRoute, validateProjectData, updateProject);
 
 // DELETE - delete project
-router.delete("/:id", protectRoute,deleteProject);
+router.delete("/:id", protectRoute, deleteProject);
 
 export default router;
