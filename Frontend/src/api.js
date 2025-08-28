@@ -12,6 +12,7 @@ export const logoutUser = () => API.post("/auth/logout");
 export const forgotPassword = (data) => API.post("/auth/forgot-password", data);
 export const getCurrentUser = () => API.get("/auth/check");
 export const updateProfile = (data) => API.put("/auth/update-profile", data);
+export const resetPassword = (data) => API.post("/auth/reset-password", data);
 
 // --- PROJECT ROUTES ---
 export const getAllProjects = () => API.get("/projects");

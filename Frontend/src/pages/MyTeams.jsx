@@ -26,7 +26,7 @@ export default function MyTeams() {
   const [isAdding, setIsAdding] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profileData, setProfileData] = useState(null);
-  const [loadingProfile, setLoadingProfile] = useState(false);
+  const [, setLoadingProfile] = useState(false);
 
   const fetchMyTeams = useCallback((currentUser) => {
     if (!currentUser) return;

@@ -15,6 +15,7 @@ import TeacherApplications from "./pages/TeacherApplications.jsx";
 import UpdateProject from "./pages/UpdateProject.jsx";
 import Notifications from "./pages/Notifications.jsx";
 import MyTeams from "./pages/MyTeams.jsx"; // Import the new page
+import ResetPassword from "./pages/ResetPassword.jsx";
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Student Routes */}
         <Route path="/student-dashboard" element={<StudentDashboard />} />
