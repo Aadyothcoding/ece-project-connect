@@ -98,6 +98,10 @@ export default function StudentProfile() {
                 <input type="text" name="regNo" value={profile.regNo || "Not set"} disabled className="w-full mt-1 px-4 py-2 bg-slate-200 border border-slate-300 rounded-lg text-gray-500 cursor-not-allowed" />
               </div>
                <div>
+                <label className="text-sm font-medium text-gray-600">CGPA</label>
+                <input type="number" name="cgpa" value={profile.cgpa ?? ""} min={0} max={10} step={0.01} onChange={handleChange} className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition" />
+              </div>
+               <div>
                 <label className="text-sm font-medium text-gray-600">Department</label>
                 <input type="text" name="department" value={profile.department || ""} onChange={handleChange} className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition" />
               </div>

@@ -245,26 +245,23 @@ export default function MyTeams() {
               <span className="font-semibold">Reg No:</span> {profileData.regNo}
             </p>
             <p>
-              <span className="font-semibold">Department:</span>{" "}
-              {profileData.department}
+              <span className="font-semibold">CGPA:</span> {profileData.cgpa ?? "N/A"}
             </p>
             <p>
-              <span className="font-semibold">Experience:</span>{" "}
-              {profileData.experience || "N/A"}
+              <span className="font-semibold">Department:</span> {profileData.department}
             </p>
             <p>
-              <span className="font-semibold">Description:</span>{" "}
-              {profileData.description || "N/A"}
+              <span className="font-semibold">Experience:</span> {profileData.experience || "N/A"}
             </p>
             <p>
-              <span className="font-semibold">Research Past:</span>{" "}
-              {profileData.researchPast || "N/A"}
+              <span className="font-semibold">Description:</span> {profileData.description || "N/A"}
+            </p>
+            <p>
+              <span className="font-semibold">Research Past:</span> {profileData.researchPast || "N/A"}
             </p>
             <p className="mt-2">
-              <span className="font-semibold">Skills:</span>{" "}
-              {profileData.skills?.join(", ") || "N/A"}
+              <span className="font-semibold">Skills:</span> {profileData.skills?.join(", ") || "N/A"}
             </p>
-
             {profileData.resumeUrl && (
               <div className="mt-4">
                 <a
@@ -277,7 +274,6 @@ export default function MyTeams() {
                 </a>
               </div>
             )}
-
             <div className="mt-6 flex justify-end">
               <button
                 onClick={() => setShowProfileModal(false)}

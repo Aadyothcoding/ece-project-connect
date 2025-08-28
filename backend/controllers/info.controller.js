@@ -4,7 +4,7 @@ export const getStudentInfo = async (req, res) => {
   try {
     const { id } = req.params; // student _id
     const student = await User.findById(id).select(
-      "fullName email regNo department skills resumeUrl experience description researchPast"
+      "fullName email regNo department skills resumeUrl experience description researchPast cgpa"
     );
 
     if (!student) {

@@ -16,15 +16,19 @@ export const searchStudentByRegNo = async (req, res) => {
     }
 
     // Check if student is already in a team
-    const alreadyInTeam = await TeamApproved.findOne({
-      "members.studentId": student._id,
-    });
-
-    if (alreadyInTeam) {
-      return res.status(400).json({
-        message: "Student is already part of another approved team",
+      // Check if student is already in a team or has a pending/approved application
+      const alreadyInTeam = await TeamApproved.findOne({
+        "members.studentId": student._id,
       });
-    }
+      const hasPendingOrApprovedApplication = await StudentProjectApply.findOne({
+        "members.studentId": student._id,
+        status: { $in: ["pending_member_approval", "pending_faculty_approval", "approved"] },
+      });
+      if (alreadyInTeam || hasPendingOrApprovedApplication) {
+        return res.status(400).json({
+          message: "Student is already part of another team or has a pending/approved application",
+        });
+      }
 
     res.status(200).json({ student });
   } catch (err) {

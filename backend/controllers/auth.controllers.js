@@ -155,23 +155,25 @@ export const logout = (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { 
-        profilePic, 
-        department, 
-        skills, 
-        resumeUrl, 
-        experience, 
-        description, 
-        researchPast 
-    } = req.body;
+  const { 
+    profilePic, 
+    department, 
+    skills, 
+    resumeUrl, 
+    experience, 
+    description, 
+    researchPast, 
+    cgpa
+  } = req.body;
     
     const userId = req.user._id;
 
     const updatedFields = {};
-    if (profilePic) updatedFields.profilePic = profilePic;
-    if (department) updatedFields.department = department;
-    if (skills) updatedFields.skills = skills;
-    if (resumeUrl) updatedFields.resumeUrl = resumeUrl;
+  if (profilePic) updatedFields.profilePic = profilePic;
+  if (department) updatedFields.department = department;
+  if (skills) updatedFields.skills = skills;
+  if (resumeUrl) updatedFields.resumeUrl = resumeUrl;
+  if (cgpa !== undefined) updatedFields.cgpa = cgpa;
     
     if (req.user.role === 'teacher') {
         if (experience) updatedFields.experience = experience;

@@ -40,6 +40,13 @@ const userSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    cgpa: {
+      type: Number,
+      required: false,
+      min: 0,
+      max: 10,
+      default: null,
+    },
     resumeUrl: {
       type: String,
       default: "",
