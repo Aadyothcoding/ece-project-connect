@@ -8,21 +8,33 @@ export const applyToProject = async (req, res) => {
     const { projectId, applicationType, members } = req.body;
     const leader = req.user;
 
+    // Count how many times student has applied
+    const existingApps = await StudentProjectApply.find({
+      "members.studentId": leader._id,
+    });
+
+    if (existingApps.length >= 2) {
+      return res.status(400).json({
+        message: "You can only apply for up to 2 projects (Priority 1 & 2).",
+      });
+    }
+
+    // Auto-assign priority
+    const priority = existingApps.length === 0 ? 1 : 2;
+
+    // Prevent duplicate priority (just in case)
+    if (existingApps.some((a) => a.priority === priority)) {
+      return res
+        .status(400)
+        .json({ message: `You already applied for Priority ${priority}.` });
+    }
+
     const project = await Project.findById(projectId);
     if (!project) {
       return res.status(404).json({ message: "Project not found." });
     }
 
-    const leaderAlreadyApplied = await StudentProjectApply.findOne({
-      projectId,
-      "members.studentId": leader._id,
-    });
-    if (leaderAlreadyApplied) {
-      return res
-        .status(400)
-        .json({ message: "You have already applied for this project." });
-    }
-
+    // Build members list
     const memberList = [
       {
         studentId: leader._id,
@@ -34,34 +46,30 @@ export const applyToProject = async (req, res) => {
 
     if (applicationType === "group") {
       if (!members || members.length !== 2) {
-        return res
-          .status(400)
-          .json({
-            message:
-              "A group application must include exactly two other members.",
-          });
+        return res.status(400).json({
+          message:
+            "A group application must include exactly two other members.",
+        });
       }
 
       for (const member of members) {
         const memberUser = await User.findOne({ regNo: member.regNo });
         if (!memberUser) {
-          return res
-            .status(404)
-            .json({
-              message: `Student with Reg No "${member.regNo}" not found.`,
-            });
+          return res.status(404).json({
+            message: `Student with Reg No "${member.regNo}" not found.`,
+          });
         }
+
         const teammateAlreadyApplied = await StudentProjectApply.findOne({
           projectId,
           "members.studentId": memberUser._id,
         });
         if (teammateAlreadyApplied) {
-          return res
-            .status(400)
-            .json({
-              message: `Student ${memberUser.fullName} has already applied for this project.`,
-            });
+          return res.status(400).json({
+            message: `Student ${memberUser.fullName} has already applied for this project.`,
+          });
         }
+
         memberList.push({
           studentId: memberUser._id,
           name: memberUser.fullName,
@@ -75,6 +83,7 @@ export const applyToProject = async (req, res) => {
       projectId,
       applicationType,
       members: memberList,
+      priority,
       status:
         applicationType === "group"
           ? "pending_member_approval"
@@ -83,11 +92,15 @@ export const applyToProject = async (req, res) => {
 
     await application.save();
 
+    // 🚨 Only notify faculty if it's priority 1
+    if (priority === 1) {
+      console.log(
+        `Faculty ${project.facultyName} notified about Priority 1 application`
+      );
+    }
+
     res.status(201).json({
-      message:
-        applicationType === "group"
-          ? "Group application initiated! Your teammates will be notified on their dashboard."
-          : "Application submitted successfully!",
+      message: `Application for Priority ${priority} submitted successfully!`,
       application,
     });
   } catch (error) {
@@ -160,11 +173,9 @@ export const respondToInvitation = async (req, res) => {
 
     const member = application.members.id(memberId);
     if (!member || !member.studentId.equals(studentId)) {
-      return res
-        .status(403)
-        .json({
-          message: "You are not authorized to respond to this invitation.",
-        });
+      return res.status(403).json({
+        message: "You are not authorized to respond to this invitation.",
+      });
     }
 
     if (response === "approved") {
@@ -185,12 +196,10 @@ export const respondToInvitation = async (req, res) => {
       // If one member rejects, the entire application is removed.
       await StudentProjectApply.findByIdAndDelete(applicationId);
       // TODO: Notify the group leader that their application was rejected by a teammate.
-      return res
-        .status(200)
-        .json({
-          message:
-            "You have rejected the invitation. The application has been withdrawn.",
-        });
+      return res.status(200).json({
+        message:
+          "You have rejected the invitation. The application has been withdrawn.",
+      });
     }
 
     await application.save();
@@ -198,41 +207,144 @@ export const respondToInvitation = async (req, res) => {
       .status(200)
       .json({ message: "You have successfully accepted the invitation!" });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Server error responding to invitation.",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Server error responding to invitation.",
+      error: error.message,
+    });
   }
 };
+
+// export const getApplicationsForProject = async (req, res) => {
+//   try {
+//     if (req.user.role !== "teacher") {
+//       return res.status(403).json({
+//         message: "Access denied. Only teachers can view applications.",
+//       });
+//     }
+
+//     const { projectId } = req.params;
+
+//     const project = await Project.findById(projectId);
+//     if (!project) {
+//       return res.status(404).json({ message: "Project not found" });
+//     }
+
+//     if (project.facultyName !== req.user.fullName) {
+//       return res.status(403).json({
+//         message:
+//           "Access denied. You can only view applications for your own projects.",
+//       });
+//     }
+
+//     // 🔹 Fetch all applications for this project
+//     let applications = await StudentProjectApply.find({ projectId }).populate(
+//       "members.studentId",
+//       "fullName email regNo"
+//     );
+
+//     if (!applications.length) {
+//       return res.status(200).json({ project, applications: [] });
+//     }
+
+//     // 🔹 Step 1: project-level priority filter
+//     const hasPriority1 = applications.some((app) => app.priority === 1);
+//     applications = applications.filter((app) =>
+//       hasPriority1 ? app.priority === 1 : app.priority === 2
+//     );
+
+//     // 🔹 Step 2: student-level filter (remove all priority:2 if same student has priority:1 anywhere)
+//     const priority1Students = await StudentProjectApply.distinct(
+//       "members.studentId",
+//       { priority: 1 }
+//     );
+
+//     applications = applications.filter((app) => {
+//       if (app.priority === 1) return true; // always keep priority 1
+//       // drop priority 2 if student has priority 1 elsewhere
+//       return !app.members.some((m) =>
+//         priority1Students.includes(m.studentId.toString())
+//       );
+//     });
+
+//     res.status(200).json({
+//       project: {
+//         _id: project._id,
+//         title: project.projectTitle,
+//         facultyName: project.facultyName,
+//       },
+//       applications,
+//     });
+//   } catch (error) {
+//     console.error("Get Applications Error:", error);
+//     res.status(500).json({ message: "Server error", error: error.message });
+//   }
+// };
 
 export const getApplicationsForProject = async (req, res) => {
   try {
     if (req.user.role !== "teacher") {
-      return res
-        .status(403)
-        .json({
-          message: "Access denied. Only teachers can view applications.",
-        });
+      return res.status(403).json({
+        message: "Access denied. Only teachers can view applications.",
+      });
     }
+
     const { projectId } = req.params;
+
     const project = await Project.findById(projectId);
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
     }
+
     if (project.facultyName !== req.user.fullName) {
-      return res
-        .status(403)
-        .json({
-          message:
-            "Access denied. You can only view applications for your own projects.",
-        });
+      return res.status(403).json({
+        message:
+          "Access denied. You can only view applications for your own projects.",
+      });
     }
-    const applications = await StudentProjectApply.find({ projectId }).populate(
+
+    // 🔹 Fetch all applications for this project
+    let applications = await StudentProjectApply.find({ projectId }).populate(
       "members.studentId",
       "fullName email regNo"
     );
+
+    if (!applications.length) {
+      return res.status(200).json({ project, applications: [] });
+    }
+
+    // 🔹 Step 1: Determine highest priority present (only 1 or 2 allowed)
+    let highestPriority = null;
+    for (let p = 1; p <= 2; p++) {
+      if (applications.some((app) => app.priority === p)) {
+        highestPriority = p;
+        break;
+      }
+    }
+
+    if (!highestPriority) {
+      // no priority 1 or 2 found → ignore priority 3+
+      return res.status(200).json({ project, applications: [] });
+    }
+
+    applications = applications.filter(
+      (app) => app.priority === highestPriority
+    );
+
+    // 🔹 Step 2: Global filter → drop ALL priority 2 apps of students who have priority 1 anywhere
+    const priority1Students = await StudentProjectApply.distinct(
+      "members.studentId",
+      { priority: 1 }
+    );
+    const p1Set = new Set(priority1Students.map((id) => id.toString()));
+
+    applications = applications.filter((app) => {
+      if (app.priority === 2) {
+        // keep only if none of its members have a priority 1 elsewhere
+        return !app.members.some((m) => p1Set.has(m.studentId.toString()));
+      }
+      return true; // always keep priority 1 apps
+    });
+
     res.status(200).json({
       project: {
         _id: project._id,
@@ -242,6 +354,7 @@ export const getApplicationsForProject = async (req, res) => {
       applications,
     });
   } catch (error) {
+    console.error("Get Applications Error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };

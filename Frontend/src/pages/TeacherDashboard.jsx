@@ -302,39 +302,18 @@ export default function TeacherDashboard() {
                         required
                       >
                         <option value="">Select Domain</option>
-                        <option>Analog Circuits</option>
-                        <option>Digital Circuits</option>
-                        <option>Semiconductor Devices</option>
-                        <option>Wireless & Mobile Communication</option>
-                        <option>Fiber-Optic Communication</option>
-                        <option>Computer Networks</option>
-                        <option>Digital Signal Processing (DSP)</option>
-                        <option>Image & Video Processing</option>
-                        <option>Embedded Systems</option>
-                        <option>Internet of Things (IoT)</option>
-                        <option>Electromagnetics & RF Engineering</option>
-                        <option>Antennas & Wave Propagation</option>
-                        <option>VLSI (Very Large Scale Integration)</option>
-                        <option>Control Systems</option>
-                        <option>Robotics and Automation</option>
-                        <option>Power Electronics</option>
-                        <option>Computer Architecture</option>
-                        <option>Photonics and Optoelectronics</option>
-                        <option>Information Theory</option>
-                        <option>Biomedical Engineering</option>
-                        <option>Quantum Computing</option>
-                        <option>MEMS (Micro-Electro-Mechanical Systems)</option>
-                        <option>Machine Learning & AI Hardware</option>
-                        <option>Signal Integrity and High-Speed Design</option>
-                        <option>Nanoelectronics</option>
-                        <option>Terahertz Technology</option>
-                        <option>Mixed Signal Design</option>
-                        <option>Automotive Electronics</option>
-                        <option>Sensor Networks</option>
-                        <option>Radar Systems</option>
-                        <option>Satellite Communication</option>
-                        <option>Cyber-Physical Systems</option>
-                        <option>Augmented & Virtual Reality Hardware</option>
+                        <option>Antenna design and RF systems</option>
+                        <option>AI/ML/DL based applications</option>
+                        <option>Automation and Robotics</option>
+                        <option>Audio, Speech signal Processing</option>
+                        <option>Biomedical Electronics</option>
+                        <option>Embedded Systems and IoT</option>
+                        <option>Image and Video Processing</option>
+                        <option>Multi disciplinary</option>
+                        <option>Optical Communication</option>
+                        <option>Semiconductor material & Devices</option>
+                        <option>VLSI Design</option>
+                        <option>Wireless Communication</option>
                       </select>
                     </div>
                     <div>
