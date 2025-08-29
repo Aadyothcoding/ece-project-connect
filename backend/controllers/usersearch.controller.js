@@ -13,19 +13,44 @@ export const searchUsers = async (req, res) => {
         .json({ message: "Query parameter 'q' is required" });
     }
 
-    // Find all studentIds who are in a pending or approved application
-      // Exclude students who are already in a team or have a pending/approved application (including leader)
-      const unavailableStudentIds = new Set();
-      const approvedTeams = await TeamApproved.find({}, "members.studentId");
-      approvedTeams.forEach((team) => {
-        team.members.forEach((m) => unavailableStudentIds.add(m.studentId.toString()));
-      });
-      const pendingApplications = await StudentProjectApply.find({ status: { $in: ["pending_member_approval", "pending_faculty_approval", "approved"] } });
-      pendingApplications.forEach((app) => {
-        app.members.forEach((m) => unavailableStudentIds.add(m.studentId.toString()));
-      });
+    const unavailableStudentIds = new Set();
 
-    // Search students not in unavailableIds
+    // 🔹 Exclude students already in approved teams (only once allowed)
+    const approvedTeams = await TeamApproved.find({}, "members.studentId");
+    approvedTeams.forEach((team) => {
+      team.members.forEach((m) =>
+        unavailableStudentIds.add(m.studentId.toString())
+      );
+    });
+
+    // 🔹 Count how many times each student appears in StudentProjectApply
+    const applicationCounts = await StudentProjectApply.aggregate([
+      {
+        $match: {
+          status: {
+            $in: [
+              "pending_member_approval",
+              "pending_faculty_approval",
+              "approved",
+            ],
+          },
+        },
+      },
+      { $unwind: "$members" },
+      {
+        $group: {
+          _id: "$members.studentId",
+          count: { $sum: 1 },
+        },
+      },
+      { $match: { count: { $gte: 2 } } }, // ❌ Exclude students in 2+ applications
+    ]);
+
+    applicationCounts.forEach((s) =>
+      unavailableStudentIds.add(s._id.toString())
+    );
+
+    // 🔹 Now search only available students
     const users = await User.find(
       {
         role: "student",
@@ -33,7 +58,7 @@ export const searchUsers = async (req, res) => {
           { fullName: { $regex: q, $options: "i" } },
           { regNo: { $regex: q, $options: "i" } },
         ],
-          _id: { $nin: Array.from(unavailableStudentIds) },
+        _id: { $nin: Array.from(unavailableStudentIds) },
       },
       { _id: 1, regNo: 1, fullName: 1, email: 1 }
     ).limit(10);

@@ -15,7 +15,7 @@ export const approveApplication = async (req, res) => {
       return res.status(404).json({ message: "Application not found" });
     }
 
-    // Create entry in TeamApproved
+    // ✅ Create entry in TeamApproved
     const approvedTeam = new TeamApproved({
       projectId: application.projectId._id,
       facultyName: application.projectId.facultyName,
@@ -29,7 +29,7 @@ export const approveApplication = async (req, res) => {
 
     await approvedTeam.save();
 
-    // Send notifications to all members 🚀
+    // ✅ Send notifications to all members
     for (const member of application.members) {
       await Notification.create({
         userId: member.studentId,
@@ -39,11 +39,17 @@ export const approveApplication = async (req, res) => {
       });
     }
 
-    // Delete from studentprojectapplies
-    await StudentProjectApply.findByIdAndDelete(applicationId);
+    // ✅ Collect member IDs
+    const memberIds = application.members.map((m) => m.studentId);
+
+    // ✅ Delete ALL applications where these members are present
+    await StudentProjectApply.deleteMany({
+      "members.studentId": { $in: memberIds },
+    });
 
     res.status(201).json({
-      message: "Application approved, team created, and notifications sent",
+      message:
+        "Application approved, team created, notifications sent, and all other applications of these members deleted.",
       approvedTeam,
     });
   } catch (err) {
@@ -57,25 +63,43 @@ export const rejectApplication = async (req, res) => {
   try {
     const { applicationId } = req.params;
 
-    const application = await StudentProjectApply.findById(
-      applicationId
-    ).populate("projectId");
+    const application = await StudentProjectApply.findById(applicationId)
+      .populate("projectId")
+      .populate("members.studentId");
+
     if (!application) {
       return res.status(404).json({ message: "Application not found" });
     }
 
-    // Send rejection notifications 🚨
+    const leaderId = application.members[0].studentId;
+
+    // Notify rejection
     for (const member of application.members) {
       await Notification.create({
         userId: member.studentId,
         title: "Project Application Rejected",
-        message: `Your application for project "${application.projectId?.projectTitle}" has been rejected by ${application.projectId?.facultyName}.`,
+        message: `Your Priority ${application.priority} application for project "${application.projectId?.projectTitle}" has been rejected.`,
         type: "error",
       });
     }
 
-    // Delete application
+    // Delete the application
     await StudentProjectApply.findByIdAndDelete(applicationId);
+
+    // 🚨 If this was priority 1, check if student has a priority 2 application
+    if (application.priority === 1) {
+      const priority2 = await StudentProjectApply.findOne({
+        "members.studentId": leaderId,
+        priority: 2,
+      }).populate("projectId");
+
+      if (priority2) {
+        // Notify faculty about priority 2
+        console.log(
+          `Faculty ${priority2.projectId.facultyName} notified about Priority 2 application`
+        );
+      }
+    }
 
     res
       .status(200)

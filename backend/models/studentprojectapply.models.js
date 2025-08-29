@@ -28,8 +28,7 @@ const studentProjectApplySchema = new mongoose.Schema(
       enum: ["individual", "group"],
       required: true,
     },
-    // The leader is the first member in the array
-    members: [memberSchema], 
+    members: [memberSchema],
     status: {
       type: String,
       enum: [
@@ -38,11 +37,17 @@ const studentProjectApplySchema = new mongoose.Schema(
         "approved",
         "rejected",
       ],
-      default: "pending_faculty_approval", // Default for individual
+      default: "pending_faculty_approval",
+    },
+    priority: {
+      type: Number,
+      enum: [1, 2],
+      required: true,
     },
     appliedAt: {
       type: Date,
-      default: Date.now,
+      default: () => new Date(),
+      expires: 60 * 60 * 24 * 2, // 2 days TTL
     },
   },
   { timestamps: true }

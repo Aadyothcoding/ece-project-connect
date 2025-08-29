@@ -1,4 +1,5 @@
 // controllers/projectupload.controller.js
+import mongoose from "mongoose";
 import Project from "../models/projectupload.models.js";
 import StudentProjectApply from "../models/studentprojectapply.models.js";
 import TeamApproved from "../models/teamapproved.model.js";
@@ -46,16 +47,47 @@ export const createProject = async (req, res) => {
  * @route   GET /api/projects
  * @access  Private (Student)
  */
+
 export const getAllProjects = async (req, res) => {
   try {
-    // 1. Get all projectIds from TeamApproved and StudentProjectApply
+    const studentId = req.user._id; // assuming protectRoute adds req.user
+
+    // 1. Get all approved projects
     const approvedProjects = await TeamApproved.distinct("projectId");
-    const appliedProjects = await StudentProjectApply.distinct("projectId");
 
-    // 2. Merge them into one exclusion list
-    const excludedIds = [...new Set([...approvedProjects, ...appliedProjects])];
+    // 2. Get all projects that already have more than 2 applications
+    const overAppliedProjects = await StudentProjectApply.aggregate([
+      {
+        $group: {
+          _id: "$projectId",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $match: { count: { $gt: 2 } },
+      },
+      {
+        $project: { _id: 1 },
+      },
+    ]);
+    const overAppliedIds = overAppliedProjects.map((p) => p._id);
 
-    // 3. Find projects not in excludedIds
+    // 3. Get all projects where current student has already applied
+    const studentAppliedProjects = await StudentProjectApply.distinct(
+      "projectId",
+      { "members.studentId": new mongoose.Types.ObjectId(studentId) }
+    );
+
+    // 4. Merge all exclusions
+    const excludedIds = [
+      ...new Set([
+        ...approvedProjects,
+        ...overAppliedIds,
+        ...studentAppliedProjects,
+      ]),
+    ];
+
+    // 5. Fetch projects excluding the above
     const projects = await Project.find({
       _id: { $nin: excludedIds },
     }).sort({ createdAt: -1 });
