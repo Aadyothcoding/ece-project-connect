@@ -1,101 +1,117 @@
-import nodemailer from 'nodemailer';
-import dotenv from "dotenv";
+import sgMail from '@sendgrid/mail';
+import dotenv from 'dotenv';
+
 dotenv.config();
 
-// Debug: Check env variables
-console.log("📧 MAIL_USER:", process.env.MAIL_USER);
-console.log("🔐 MAIL_PASS:", process.env.MAIL_PASS ? "✓ Loaded" : "❌ MISSING");
-
-// Step 1: Create transporter
-let transporter;
-try {
-  transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.MAIL_USER,
-      pass: process.env.MAIL_PASS,
-    },
-  });
-
-  // Step 2: Verify transporter
-  transporter.verify((error, success) => {
-    if (error) {
-      console.error("❌ Transporter verification failed:", error.message);
-    } else {
-      console.log("✅ Transporter is ready to send emails");
-    }
-  });
-} catch (err) {
-  console.error("❌ Error creating transporter:", err.message);
+// --- Environment Variable Check ---
+// This block will print an error in your console if any required variables are missing.
+const requiredEnvVars = ['SENDGRID_API_KEY', 'SENDER_EMAIL', 'CLIENT_URL'];
+for (const varName of requiredEnvVars) {
+  if (!process.env[varName]) {
+    console.error(`❌ FATAL ERROR: Environment variable ${varName} is not set. Email functionality may fail.`);
+  }
 }
 
-// Send verification email
+// --- SendGrid Configuration ---
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+const SENDER_EMAIL = process.env.SENDER_EMAIL;
+const PROJECT_NAME = process.env.PROJECT_NAME || "Project Connect SRM";
+
+/**
+ * Sends a verification email to a new user.
+ * @param {string} to - The recipient's email address.
+ * @param {string} name - The recipient's full name.
+ * @param {string} token - The unique verification token.
+ */
 export const sendVerificationEmail = async (to, name, token) => {
   const verifyUrl = `${process.env.CLIENT_URL}/verify?token=${token}`;
-
-  const mailOptions = {
-    from: `"${process.env.PROJECT_NAME}" <${process.env.MAIL_USER}>`,
-    to,
-    subject: `Verify your ${process.env.PROJECT_NAME} account`,
+  
+  const msg = {
+    to: to,
+    from: SENDER_EMAIL,
+    subject: `Verify Your Account | ${PROJECT_NAME}`,
     html: `
-      <h2>Hello ${name},</h2>
-      <p>Please verify your email to activate your account:</p>
-      <a href="${verifyUrl}" style="padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Verify Email</a>
-      <p>This link expires in 24 hours.</p>
-      <p>If you didn't sign up, you can ignore this email.</p>
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h2>Hello ${name},</h2>
+        <p>Thank you for signing up! Please verify your email to activate your account:</p>
+        <p style="margin: 20px 0;">
+          <a href="${verifyUrl}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verify Your Email</a>
+        </p>
+        <p>This link will expire in 24 hours.</p>
+      </div>
     `,
   };
 
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log("✅ Verification email sent:", info.messageId);
-  } catch (err) {
-    console.error("❌ Error sending verification email:", err.message);
+    await sgMail.send(msg);
+    console.log(`✅ Verification email sent successfully to ${to}`);
+  } catch (error) {
+    console.error('❌ Error sending verification email via SendGrid:', error);
   }
 };
 
-// Send welcome email
+/**
+ * Sends a welcome email after successful verification.
+ * @param {string} to - The recipient's email address.
+ * @param {string} name - The recipient's full name.
+ */
 export const sendWelcomeEmail = async (to, name) => {
-  const mailOptions = {
-    from: `"${process.env.PROJECT_NAME}" <${process.env.MAIL_USER}>`,
-    to,
-    subject: `Welcome to ${process.env.PROJECT_NAME}!`,
+  const loginUrl = `${process.env.CLIENT_URL}/login`;
+  
+  const msg = {
+    to: to,
+    from: SENDER_EMAIL,
+    subject: `Welcome to ${PROJECT_NAME}!`,
     html: `
-      <h2>Welcome, ${name}! 🎉</h2>
-      <p>We're excited to have you on board.</p>
-      <p>Get started by logging in to your account:</p>
-      <a href="${process.env.CLIENT_URL}/login" style="padding: 10px 20px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px;">Login</a>
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h2>Welcome, ${name}! 🎉</h2>
+        <p>We're excited to have you on board. Your account is now active.</p>
+        <p>You can get started by logging in:</p>
+        <p style="margin: 20px 0;">
+          <a href="${loginUrl}" style="background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Login to Your Account</a>
+        </p>
+      </div>
     `,
   };
 
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log("✅ Welcome email sent:", info.messageId);
-  } catch (err) {
-    console.error("❌ Error sending welcome email:", err.message);
+    await sgMail.send(msg);
+    console.log(`✅ Welcome email sent successfully to ${to}`);
+  } catch (error) {
+    console.error('❌ Error sending welcome email via SendGrid:', error);
   }
 };
 
-// Send password reset email
+/**
+ * Sends a password reset email.
+ * @param {string} to - The recipient's email address.
+ * @param {string} name - The recipient's full name.
+ * @param {string} token - The unique password reset token.
+ */
 export const sendResetEmail = async (to, name, token) => {
   const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${token}`;
-
-  const mailOptions = {
-    from: `"${process.env.PROJECT_NAME}" <${process.env.MAIL_USER}>`,
-    to,
-    subject: `Reset your ${process.env.PROJECT_NAME} password`,
+  
+  const msg = {
+    to: to,
+    from: SENDER_EMAIL,
+    subject: `Password Reset Request | ${PROJECT_NAME}`,
     html: `
-      <h2>Hello ${name},</h2>
-      <p>You requested a password reset. Click below to set a new password:</p>
-      <a href="${resetUrl}" style="padding: 10px 20px; background-color: #ffc107; color: black; text-decoration: none; border-radius: 5px;">Reset Password</a>
-      <p>This link expires in 1 hour. If you didn't request this, just ignore this email.</p>
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h2>Hello ${name},</h2>
+        <p>We received a request to reset your password. Click the link below to set a new one:</p>
+        <p style="margin: 20px 0;">
+          <a href="${resetUrl}" style="background-color: #ffc107; color: black; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Your Password</a>
+        </p>
+        <p>This link will expire in 1 hour. If you didn't request this, you can safely ignore this email.</p>
+      </div>
     `,
   };
 
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log("✅ Reset email sent:", info.messageId);
-  } catch (err) {
-    console.error("❌ Error sending reset email:", err.message);
+    await sgMail.send(msg);
+    console.log(`✅ Password reset email sent successfully to ${to}`);
+  } catch (error) {
+    console.error('❌ Error sending reset email via SendGrid:', error);
   }
 };

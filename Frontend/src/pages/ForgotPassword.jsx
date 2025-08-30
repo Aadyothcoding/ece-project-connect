@@ -27,32 +27,32 @@ export default function ForgotPassword() {
 
   return (
     <motion.div
-      className="flex items-center justify-center min-h-screen bg-gray-900 text-white"
+      className="flex items-center justify-center min-h-screen bg-black/60"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
-      <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md fade-in">
-        <h2 className="text-2xl font-bold mb-6 text-center">Forgot Password</h2>
-        {message && <p className="text-green-400 mb-3">{message}</p>}
-        {error && <p className="text-red-400 mb-3">{error}</p>}
+      <div className="bg-white rounded-lg p-8 md:p-10 shadow-xl max-w-md w-full border border-slate-200 text-gray-800">
+        <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center text-gray-800">Forgot Password</h2>
+        {message && <p className="text-green-600 mb-3 text-center">{message}</p>}
+        {error && <p className="text-red-500 mb-3 text-center">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="email"
             placeholder="Enter your email"
-            className="w-full px-4 py-2 rounded bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
             onChange={(e) => setEmail(e.target.value)}
             required
           />
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2 bg-blue-600 hover:bg-blue-700 rounded transition"
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg shadow-md transition-transform transform hover:scale-105 disabled:opacity-50"
           >
             {loading ? "Sending..." : "Send Reset Link"}
           </button>
         </form>
         <div className="mt-4 text-center">
-          <Link to="/login" className="text-blue-400 hover:underline">
+          <Link to="/login" className="text-cyan-600 hover:underline font-medium">
             Back to Login
           </Link>
         </div>
