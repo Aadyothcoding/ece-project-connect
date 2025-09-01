@@ -180,7 +180,10 @@ const ApplyModal = ({ project, onClose, onApply }) => {
           <h2 className="text-xl md:text-2xl font-bold text-gray-800">
             Apply to: {project.projectTitle}
           </h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800">
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-800"
+          >
             <X size={28} />
           </button>
         </div>
@@ -231,7 +234,9 @@ const ApplyModal = ({ project, onClose, onApply }) => {
                           onClick={() => handleSelectStudent(index, student)}
                           className="p-3 hover:bg-slate-100 cursor-pointer"
                         >
-                          <p className="font-semibold text-gray-800">{student.fullName}</p>
+                          <p className="font-semibold text-gray-800">
+                            {student.fullName}
+                          </p>
                           <p className="text-xs text-gray-500">
                             {student.regNo}
                           </p>
@@ -275,39 +280,18 @@ export default function StudentDashboard() {
   const [selectedDomains, setSelectedDomains] = useState([]);
 
   const domainOptions = [
-    "Analog Circuits",
-    "Digital Circuits",
-    "Semiconductor Devices",
-    "Wireless & Mobile Communication",
-    "Fiber-Optic Communication",
-    "Computer Networks",
-    "Digital Signal Processing (DSP)",
-    "Image & Video Processing",
-    "Embedded Systems",
-    "Internet of Things (IoT)",
-    "Electromagnetics & RF Engineering",
-    "Antennas & Wave Propagation",
-    "VLSI (Very Large Scale Integration)",
-    "Control Systems",
-    "Robotics and Automation",
-    "Power Electronics",
-    "Computer Architecture",
-    "Photonics and Optoelectronics",
-    "Information Theory",
-    "Biomedical Engineering",
-    "Quantum Computing",
-    "MEMS (Micro-Electro-Mechanical Systems)",
-    "Machine Learning & AI Hardware",
-    "Signal Integrity and High-Speed Design",
-    "Nanoelectronics",
-    "Terahertz Technology",
-    "Mixed Signal Design",
-    "Automotive Electronics",
-    "Sensor Networks",
-    "Radar Systems",
-    "Satellite Communication",
-    "Cyber-Physical Systems",
-    "Augmented & Virtual Reality Hardware",
+    "Antenna design and RF systems",
+    "AI/ML/DL based applications",
+    "Automation and Robotics",
+    "Audio, Speech signal Processing",
+    "Biomedical Electronics",
+    "Embedded Systems and IoT",
+    "Image and Video Processing",
+    "Multi disciplinary",
+    "Optical Communication",
+    "Semiconductor material & Devices",
+    "VLSI Design",
+    "Wireless Communication",
   ];
 
   const fetchInvitations = useCallback(() => {
@@ -375,9 +359,7 @@ export default function StudentDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-100 text-gray-800">
-      <Toaster
-        position="top-right"
-      />
+      <Toaster position="top-right" />
       {selectedProject && (
         <ApplyModal
           project={selectedProject}
@@ -395,10 +377,15 @@ export default function StudentDashboard() {
 
         <div className="lg:flex lg:gap-8 mt-6">
           <aside className="w-full lg:w-64 mb-8 lg:mb-0 bg-white p-4 rounded-xl shadow-lg border border-slate-200 h-fit lg:sticky top-8">
-            <h3 className="text-lg font-bold mb-4 text-gray-700">Filter by Domain</h3>
+            <h3 className="text-lg font-bold mb-4 text-gray-700">
+              Filter by Domain
+            </h3>
             <div className="space-y-2 max-h-[30vh] lg:max-h-[60vh] overflow-y-auto">
               {domainOptions.map((domain) => (
-                <label key={domain} className="flex items-center gap-2 text-sm text-gray-600">
+                <label
+                  key={domain}
+                  className="flex items-center gap-2 text-sm text-gray-600"
+                >
                   <input
                     type="checkbox"
                     checked={selectedDomains.includes(domain)}
