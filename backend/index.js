@@ -24,17 +24,11 @@ const app = express();
 const allowedOrigins = [
   process.env.CLIENT_URL || "http://localhost:5173",
   "http://localhost:5173",
-  "http://localhost:3050"
+  "http://localhost:3050",
 ];
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, origin);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: true,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -74,8 +68,13 @@ const PORT = process.env.PORT || 3050; // ✅ Default to 3050
 const startServer = async () => {
   try {
     await connectDB();
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
+    // app.listen(PORT, () => {
+    //   console.log(`🚀 Server running on http://localhost:${PORT}`);
+    // });
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(
+        `🚀 Server running on [::]:${PORT} (IPv6 and IPv4 if dual stack)`
+      );
     });
   } catch (error) {
     console.error("❌ Failed to start server:", error);
