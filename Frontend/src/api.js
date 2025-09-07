@@ -1,12 +1,21 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL:
-    import.meta.env.DEV
-      ? "http://localhost:3050/api"
-      : `https://${import.meta.env.VITE_BACKEND_URL}/api`,
+  baseURL: import.meta.env.DEV
+    ? "http://localhost:3050/api"
+    : `https://${import.meta.env.VITE_BACKEND_URL}/api`,
   withCredentials: true,
 });
+
+// const API = axios.create({
+//   baseURL: "http://103.4.220.252:3050/api",
+//   withCredentials: true,
+// });
+
+// const API = axios.create({
+//   baseURL: "https://10.63.47.148:3050/api",
+//   withCredentials: true,
+// });
 
 // --- AUTH ROUTES ---
 export const signupUser = (data) => API.post("/auth/signup", data);
