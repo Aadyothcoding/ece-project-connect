@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
-  getAllProjects,
   createProject,
   deleteProject,
   getCurrentUser,
@@ -48,10 +47,10 @@ const ConfirmationModal = ({ message, onConfirm, onCancel }) => (
 export default function TeacherDashboard() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
+  const [globalDeadline, setGlobalDeadline] = useState("");
   const [newProject, setNewProject] = useState({
     projectTitle: "",
     description: "",
-    applicationDeadline: "",
     stream: "",
     domain: "",
   });
@@ -95,6 +94,20 @@ export default function TeacherDashboard() {
         navigate("/login");
       });
   }, [navigate, loadProjectsForCurrentUser]);
+
+  useEffect(() => {
+    import("../api").then(({ getGlobalDeadline }) => {
+      getGlobalDeadline()
+        .then((res) => {
+          if (res.data.deadline) {
+            setGlobalDeadline(
+              new Date(res.data.deadline).toLocaleDateString()
+            );
+          }
+        })
+        .catch(() => setGlobalDeadline(""));
+    });
+  }, []);
 
   const handleUpload = (e) => {
     e.preventDefault();
@@ -163,8 +176,19 @@ export default function TeacherDashboard() {
     );
   }
 
+  // Show set deadline button for allowed teachers
+  const allowedEmails = [
+    "sangeetm@srmist.edu.in",
+    "vadivukk@srmist.edu.in",
+    "elavelvg@srmist.edu.in",
+  ];
   return (
     <div className="min-h-screen bg-slate-100 text-gray-800">
+      {user && (
+        <div className="max-w-2xl mx-auto mt-6 mb-2 text-center">
+          <span className="text-2xl font-bold text-cyan-700 drop-shadow">Welcome, {user.fullName || user.name || user.email}</span>
+        </div>
+      )}
       {notification.message && (
         <div
           className={`fixed top-5 right-5 z-50 flex items-center gap-3 p-4 rounded-lg shadow-lg ${
@@ -191,6 +215,24 @@ export default function TeacherDashboard() {
       )}
 
       <div className="relative max-w-7xl mx-auto z-10 p-4 sm:p-6 lg:p-8">
+        {globalDeadline && (
+          <div className="max-w-2xl mx-auto mt-6 mb-4 bg-white border border-cyan-200 rounded-lg shadow p-4 text-center">
+            <span className="font-semibold text-cyan-700">
+              Application Deadline:
+            </span>
+            <span className="ml-2 text-gray-800">{globalDeadline}</span>
+          </div>
+        )}
+        {user && allowedEmails.includes(user.email) && (
+          <div className="mb-6 flex justify-end">
+            <button
+              onClick={() => navigate("/teacher/set-global-deadline")}
+              className="px-4 py-2 bg-cyan-700 text-white rounded-lg font-semibold shadow hover:bg-cyan-800 transition"
+            >
+              Set Global Application Deadline
+            </button>
+          </div>
+        )}
         <Navbar user={user} handleLogout={handleLogout} />
 
         <div className="mb-8">
@@ -267,7 +309,7 @@ export default function TeacherDashboard() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="text-sm font-medium text-gray-600">
                         Stream
@@ -315,24 +357,6 @@ export default function TeacherDashboard() {
                         <option>VLSI Design</option>
                         <option>Wireless Communication</option>
                       </select>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-600">
-                        Application Deadline
-                      </label>
-                      <input
-                        id="deadline"
-                        type="date"
-                        value={newProject.applicationDeadline}
-                        onChange={(e) =>
-                          setNewProject({
-                            ...newProject,
-                            applicationDeadline: e.target.value,
-                          })
-                        }
-                        className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
-                        required
-                      />
                     </div>
                   </div>
 
@@ -402,8 +426,7 @@ export default function TeacherDashboard() {
                         <strong>Domain:</strong> {p.domain}
                       </p>
                       <p>
-                        <strong>Deadline:</strong>{" "}
-                        {new Date(p.applicationDeadline).toLocaleDateString()}
+                        <strong>Application Deadline:</strong> <span id="global-deadline"></span>
                       </p>
                     </div>
                   </div>

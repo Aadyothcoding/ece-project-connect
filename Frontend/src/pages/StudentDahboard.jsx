@@ -271,6 +271,7 @@ const ApplyModal = ({ project, onClose, onApply }) => {
 export default function StudentDashboard() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
+  const [globalDeadline, setGlobalDeadline] = useState("");
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [user, setUser] = useState(null);
   const [appliedProjectIds, setAppliedProjectIds] = useState(new Set());
@@ -301,7 +302,7 @@ export default function StudentDashboard() {
   }, []);
 
   useEffect(() => {
-    getCurrentUser()
+  getCurrentUser()
       .then((res) => {
         if (res.data.role !== "student") {
           navigate("/teacher-dashboard");
@@ -318,6 +319,13 @@ export default function StudentDashboard() {
         setFilteredProjects(res.data);
       })
       .catch(() => toast.error("Could not load available projects."));
+    import("../api").then(({ getGlobalDeadline }) => {
+      getGlobalDeadline().then(res => {
+        if (res.data.deadline) {
+          setGlobalDeadline(new Date(res.data.deadline).toLocaleDateString());
+        }
+      }).catch(() => setGlobalDeadline(""));
+    });
   }, [navigate, fetchInvitations]);
 
   useEffect(() => {
@@ -359,6 +367,17 @@ export default function StudentDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-100 text-gray-800">
+      {user && (
+        <div className="max-w-2xl mx-auto mt-6 mb-2 text-center">
+          <span className="text-2xl font-bold text-cyan-700 drop-shadow">Welcome, {user.fullName || user.name || user.email}</span>
+        </div>
+      )}
+      {globalDeadline && (
+        <div className="max-w-2xl mx-auto mt-6 mb-4 bg-white border border-cyan-200 rounded-lg shadow p-4 text-center">
+          <span className="font-semibold text-cyan-700">Application Deadline:</span>
+          <span className="ml-2 text-gray-800">{globalDeadline}</span>
+        </div>
+      )}
       <Toaster position="top-right" />
       {selectedProject && (
         <ApplyModal

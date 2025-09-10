@@ -10,28 +10,22 @@ import TeamApproved from "../models/teamapproved.model.js";
  * @access  Private (Teacher)
  * @note    This function now automatically links the project to the logged-in teacher.
  */
-export const createProject = async (req, res) => {
+const createProject = async (req, res) => {
   try {
-    // Destructure project details from the request body
-    const { projectTitle, description, applicationDeadline, stream, domain } =
-      req.body;
+    const { projectTitle, description, stream, domain } = req.body;
 
-    // Get teacher's info from the req.user object (populated by protectRoute middleware)
     const teacherId = req.user._id;
     const facultyName = req.user.fullName;
 
-    // Create a new project instance with the teacher's details
     const newProject = new Project({
       projectTitle,
       description,
-      applicationDeadline,
       stream,
       domain,
-      teacherId, // Automatically set the teacher's ID
-      facultyName, // Automatically set the teacher's name
+      teacherId,
+      facultyName,
     });
 
-    // Save the new project to the database
     const savedProject = await newProject.save();
     res.status(201).json(savedProject);
   } catch (error) {
@@ -47,15 +41,12 @@ export const createProject = async (req, res) => {
  * @route   GET /api/projects
  * @access  Private (Student)
  */
-
-export const getAllProjects = async (req, res) => {
+const getAllProjects = async (req, res) => {
   try {
-    const studentId = req.user._id; // assuming protectRoute adds req.user
+    const studentId = req.user._id;
 
-    // 1. Get all approved projects
     const approvedProjects = await TeamApproved.distinct("projectId");
 
-    // 2. Get all projects that already have more than 2 applications
     const overAppliedProjects = await StudentProjectApply.aggregate([
       {
         $group: {
@@ -63,22 +54,16 @@ export const getAllProjects = async (req, res) => {
           count: { $sum: 1 },
         },
       },
-      {
-        $match: { count: { $gt: 2 } },
-      },
-      {
-        $project: { _id: 1 },
-      },
+      { $match: { count: { $gt: 2 } } },
+      { $project: { _id: 1 } },
     ]);
     const overAppliedIds = overAppliedProjects.map((p) => p._id);
 
-    // 3. Get all projects where current student has already applied
     const studentAppliedProjects = await StudentProjectApply.distinct(
       "projectId",
       { "members.studentId": new mongoose.Types.ObjectId(studentId) }
     );
 
-    // 4. Merge all exclusions
     const excludedIds = [
       ...new Set([
         ...approvedProjects,
@@ -87,7 +72,6 @@ export const getAllProjects = async (req, res) => {
       ]),
     ];
 
-    // 5. Fetch projects excluding the above
     const projects = await Project.find({
       _id: { $nin: excludedIds },
     }).sort({ createdAt: -1 });
@@ -105,11 +89,9 @@ export const getAllProjects = async (req, res) => {
  * @desc    Get all projects for the currently logged-in teacher
  * @route   GET /api/projects/my-projects
  * @access  Private (Teacher)
- * @note    This is a new function for the teacher's dashboard.
  */
-export const getProjectsByTeacher = async (req, res) => {
+const getProjectsByTeacher = async (req, res) => {
   try {
-    // Find projects where the teacherId matches the logged-in user's ID
     const projects = await Project.find({ teacherId: req.user._id }).sort({
       createdAt: -1,
     });
@@ -128,7 +110,7 @@ export const getProjectsByTeacher = async (req, res) => {
  * @route   GET /api/projects/:id
  * @access  Private
  */
-export const getProjectById = async (req, res) => {
+const getProjectById = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id);
     if (!project) {
@@ -148,12 +130,15 @@ export const getProjectById = async (req, res) => {
  * @route   PUT /api/projects/:id
  * @access  Private (Teacher)
  */
-export const updateProject = async (req, res) => {
+const updateProject = async (req, res) => {
   try {
+    const { projectTitle, description, stream, domain } = req.body;
+    const updateFields = { projectTitle, description, stream, domain };
+
     const updatedProject = await Project.findByIdAndUpdate(
       req.params.id,
-      req.body,
-      { new: true, runValidators: true } // Return the updated doc and run schema validators
+      updateFields,
+      { new: true, runValidators: true }
     );
     if (!updatedProject) {
       return res.status(404).json({ message: "Project not found" });
@@ -168,44 +153,20 @@ export const updateProject = async (req, res) => {
 };
 
 /**
- * @desc    Delete a project
- * @route   DELETE /api/projects/:id
- * @access  Private (Teacher)
- */
-// export const deleteProject = async (req, res) => {
-//   try {
-//     const deletedProject = await Project.findByIdAndDelete(req.params.id);
-//     if (!deletedProject) {
-//       return res.status(404).json({ message: "Project not found" });
-//     }
-//     res.status(200).json({ message: "Project deleted successfully" });
-//   } catch (error) {
-//     console.error("Error in deleteProject:", error.message);
-//     res
-//       .status(500)
-//       .json({ message: "Error deleting project", error: error.message });
-//   }
-// };
-
-/**
  * @desc    Delete a project + cleanup related applications & teams
  * @route   DELETE /api/projects/:id
  * @access  Private (Teacher)
  */
-export const deleteProject = async (req, res) => {
+const deleteProject = async (req, res) => {
   try {
     const projectId = req.params.id;
 
-    // Delete the project itself
     const deletedProject = await Project.findByIdAndDelete(projectId);
     if (!deletedProject) {
       return res.status(404).json({ message: "Project not found" });
     }
 
-    // Delete all student applications linked to this project
     await StudentProjectApply.deleteMany({ projectId });
-
-    // Delete all approved teams linked to this project
     await TeamApproved.deleteMany({ projectId });
 
     res.status(200).json({
@@ -217,4 +178,13 @@ export const deleteProject = async (req, res) => {
       .status(500)
       .json({ message: "Error deleting project", error: error.message });
   }
+};
+
+export {
+  createProject,
+  getAllProjects,
+  getProjectsByTeacher,
+  getProjectById,
+  updateProject,
+  deleteProject,
 };

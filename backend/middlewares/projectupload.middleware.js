@@ -4,7 +4,7 @@ export const validateProjectData = (req, res, next) => {
     facultyName,
     projectTitle,
     description,
-    applicationDeadline,
+  // applicationDeadline removed
     stream,
     domain,
   } = req.body;
@@ -13,7 +13,7 @@ export const validateProjectData = (req, res, next) => {
     !facultyName ||
     !projectTitle ||
     !description ||
-    !applicationDeadline ||
+  // applicationDeadline removed
     !stream ||
     !domain
   ) {

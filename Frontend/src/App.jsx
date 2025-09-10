@@ -15,7 +15,20 @@ import TeacherApplications from "./pages/TeacherApplications.jsx";
 import UpdateProject from "./pages/UpdateProject.jsx";
 import Notifications from "./pages/Notifications.jsx";
 import MyTeams from "./pages/MyTeams.jsx"; // Import the new page
+import SetGlobalDeadline from "./pages/SetGlobalDeadline.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
+import { useEffect, useState } from "react";
+
+// Wrapper to inject user prop from getCurrentUser API
+function SetGlobalDeadlineWrapper() {
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    import("./api").then(({ getCurrentUser }) => {
+      getCurrentUser().then(res => setUser(res.data)).catch(() => setUser(null));
+    });
+  }, []);
+  return <SetGlobalDeadline user={user} />;
+}
 
 export default function App() {
   return (
@@ -44,6 +57,7 @@ export default function App() {
           element={<UpdateProject />}
         />
         <Route path="/teacher/my-teams" element={<MyTeams />} />
+        <Route path="/teacher/set-global-deadline" element={<SetGlobalDeadlineWrapper />} />
       </Routes>
     </Router>
   );

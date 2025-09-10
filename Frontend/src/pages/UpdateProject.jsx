@@ -10,7 +10,6 @@ export default function UpdateProject() {
     facultyName: "",
     projectTitle: "",
     description: "",
-    applicationDeadline: "",
     stream: "",
     domain: "",
   });
@@ -26,7 +25,6 @@ export default function UpdateProject() {
             facultyName: found.facultyName || "",
             projectTitle: found.projectTitle,
             description: found.description,
-            applicationDeadline: found.applicationDeadline.split("T")[0],
             stream: found.stream,
             domain: found.domain || "",
           });
@@ -144,14 +142,13 @@ export default function UpdateProject() {
           </select>
 
           {/* Application Deadline */}
-          <input
-            type="date"
-            name="applicationDeadline"
-            value={projectData.applicationDeadline}
-            onChange={handleChange}
-            className="w-full px-4 py-2 rounded bg-slate-700 border border-slate-600"
-            required
-          />
+            {/* Application Deadline (Global) */}
+            <div>
+              <label className="text-sm font-medium text-gray-600">Application Deadline</label>
+              <div className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg">
+                <span id="global-deadline"></span>
+              </div>
+            </div>
 
           <button
             type="submit"

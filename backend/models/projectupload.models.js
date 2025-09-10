@@ -24,10 +24,7 @@ const projectSchema = new mongoose.Schema(
       required: [true, "Project description is required"],
       trim: true,
     },
-    applicationDeadline: {
-      type: Date,
-      required: [true, "Application deadline is required"],
-    },
+  // applicationDeadline removed, now handled globally
     stream: {
       type: String,
       required: [true, "Stream is required"],
@@ -35,7 +32,7 @@ const projectSchema = new mongoose.Schema(
     },
     domain: {
       type: String,
-      required: [true, "Stream is required"],
+      required: [true, "Domain is required"],
       trim: true,
     },
   },

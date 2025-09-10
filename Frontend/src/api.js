@@ -1,3 +1,6 @@
+// --- GLOBAL DEADLINE ---
+export const getGlobalDeadline = () => API.get("/global-deadline");
+export const setGlobalDeadline = (deadline) => API.post("/global-deadline", { deadline });
 import axios from "axios";
 
 const API = axios.create({
