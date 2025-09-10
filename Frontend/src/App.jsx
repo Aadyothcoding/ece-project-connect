@@ -17,6 +17,7 @@ import Notifications from "./pages/Notifications.jsx";
 import MyTeams from "./pages/MyTeams.jsx"; // Import the new page
 import SetGlobalDeadline from "./pages/SetGlobalDeadline.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
+import StatisticsReport from "./pages/StatisticsReport.jsx";
 import { useEffect, useState } from "react";
 
 // Wrapper to inject user prop from getCurrentUser API
@@ -58,6 +59,7 @@ export default function App() {
         />
         <Route path="/teacher/my-teams" element={<MyTeams />} />
         <Route path="/teacher/set-global-deadline" element={<SetGlobalDeadlineWrapper />} />
+    <Route path="/teacher/statistics-report" element={<StatisticsReport />} />
       </Routes>
     </Router>
   );

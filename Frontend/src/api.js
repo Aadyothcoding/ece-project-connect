@@ -66,3 +66,6 @@ export const addTeamMember = (teamId, studentId) =>
 
 // --- INFO ROUTE ---
 export const getStudentInfo = (studentId) => API.get(`/info/${studentId}`);
+
+// --- STATISTICS ROUTE ---
+export const getStatistics = () => API.get("/statistics");

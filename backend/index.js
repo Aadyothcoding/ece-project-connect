@@ -59,6 +59,8 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/team-approved", teamApprovedRoutes);
 app.use("/api/info", infoRoutes);
 app.use("/api/global-deadline", globalDeadlineRoutes);
+import statisticsRoutes from "./routes/statistics.routes.js";
+app.use("/api/statistics", statisticsRoutes);
 
 // Catch-all for unknown routes
 app.all("*", (req, res) => {

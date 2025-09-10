@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { LogOut, User, Bell, Users } from 'lucide-react';
+import { LogOut, User, Bell, Users, BookOpen } from 'lucide-react';
 
 export default function Navbar({ user, handleLogout, notificationCount }) {
   const navigate = useNavigate();
@@ -38,6 +38,20 @@ export default function Navbar({ user, handleLogout, notificationCount }) {
           </Link>
         )}
 
+
+        {/* Statistics Report link for allowed teachers */}
+        {user?.role === 'teacher' && [
+          "sangeetm@srmist.edu.in",
+          "vadivukk@srmist.edu.in",
+          "elavelvg@srmist.edu.in"
+        ].includes(user.email) && (
+          <Link 
+            to="/teacher/statistics-report"
+            className="hidden sm:flex items-center gap-2 px-4 py-2 bg-cyan-700 hover:bg-cyan-800 text-white rounded-full shadow text-sm transition-colors"
+          >
+            <BookOpen className="w-4 h-4" /> Statistics Report
+          </Link>
+        )}
         {/* My Teams link for Teachers */}
         {user?.role === 'teacher' && (
           <Link 

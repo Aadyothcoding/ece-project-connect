@@ -224,12 +224,18 @@ export default function TeacherDashboard() {
           </div>
         )}
         {user && allowedEmails.includes(user.email) && (
-          <div className="mb-6 flex justify-end">
+          <div className="mb-6 flex justify-end gap-4">
             <button
               onClick={() => navigate("/teacher/set-global-deadline")}
               className="px-4 py-2 bg-cyan-700 text-white rounded-lg font-semibold shadow hover:bg-cyan-800 transition"
             >
               Set Global Application Deadline
+            </button>
+            <button
+              onClick={() => navigate("/teacher/statistics-report")}
+              className="px-4 py-2 bg-cyan-700 text-white rounded-lg font-semibold shadow hover:bg-cyan-800 transition"
+            >
+              Statistics Report
             </button>
           </div>
         )}
