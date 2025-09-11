@@ -36,10 +36,6 @@ const userSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
-    skills: {
-      type: [String],
-      default: [],
-    },
     cgpa: {
       type: Number,
       required: false,
@@ -47,21 +43,22 @@ const userSchema = new mongoose.Schema(
       max: 10,
       default: null,
     },
-    resumeUrl: {
-      type: String,
-      default: "",
-    },
-    profilePic: {
-      type: String,
-      default: "",
-    },
     experience: {
       type: String,
       required: false,
     },
-    description: {
+    branchSpecialisation: {
       type: String,
-      required: false,
+      enum: ["core", "ECE (CPS)", "ECE (DS)", "ECE (VLSI)", "ECE (EKE)", "ECE (MES)"],
+      default: "core",
+      required: function() { return this.role === "student"; },
+      trim: true,
+    },
+    srmWebsite: {
+      type: String,
+      default: "",
+      required: function() { return this.role === "teacher"; },
+      trim: true,
     },
     researchPast: {
       type: String,

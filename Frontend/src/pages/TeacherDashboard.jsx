@@ -51,7 +51,6 @@ export default function TeacherDashboard() {
   const [newProject, setNewProject] = useState({
     projectTitle: "",
     description: "",
-    stream: "",
     domain: "",
   });
   const [user, setUser] = useState(null);
@@ -128,7 +127,6 @@ export default function TeacherDashboard() {
           projectTitle: "",
           description: "",
           applicationDeadline: "",
-          stream: "",
           domain: "",
         });
         setIsUploadFormVisible(false); // Close form on success
@@ -318,24 +316,6 @@ export default function TeacherDashboard() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="text-sm font-medium text-gray-600">
-                        Stream
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g., ECE, CSE"
-                        value={newProject.stream}
-                        onChange={(e) =>
-                          setNewProject({
-                            ...newProject,
-                            stream: e.target.value,
-                          })
-                        }
-                        className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-600">
                         Domain
                       </label>
                       <select
@@ -425,9 +405,7 @@ export default function TeacherDashboard() {
                       {p.description}
                     </p>
                     <div className="text-xs text-gray-500 space-y-2 border-t border-slate-200 pt-3 mt-3">
-                      <p>
-                        <strong>Stream:</strong> {p.stream}
-                      </p>
+                      {/* Stream removed */}
                       <p>
                         <strong>Domain:</strong> {p.domain}
                       </p>

@@ -25,11 +25,6 @@ const projectSchema = new mongoose.Schema(
       trim: true,
     },
   // applicationDeadline removed, now handled globally
-    stream: {
-      type: String,
-      required: [true, "Stream is required"],
-      trim: true,
-    },
     domain: {
       type: String,
       required: [true, "Domain is required"],

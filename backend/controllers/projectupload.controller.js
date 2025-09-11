@@ -74,7 +74,9 @@ const getAllProjects = async (req, res) => {
 
     const projects = await Project.find({
       _id: { $nin: excludedIds },
-    }).sort({ createdAt: -1 });
+    })
+      .populate('teacherId', '_id fullName email department experience researchPast srmWebsite')
+      .sort({ createdAt: -1 });
 
     res.status(200).json(projects);
   } catch (error) {

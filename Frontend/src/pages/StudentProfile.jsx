@@ -81,11 +81,6 @@ export default function StudentProfile() {
         <section className="bg-white p-8 rounded-xl shadow-lg border border-slate-200">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="flex flex-col sm:flex-row items-center gap-6">
-              <img
-                src={profile.profilePic || `https://placehold.co/120x120/E0E7FF/4F46E5?text=${profile.fullName.charAt(0)}`}
-                alt="Profile"
-                className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md"
-              />
               <div className="flex-grow text-center sm:text-left">
                 <h2 className="text-3xl font-bold text-gray-800">{profile.fullName}</h2>
                 <p className="text-gray-500">{profile.email}</p>
@@ -106,8 +101,21 @@ export default function StudentProfile() {
                 <input type="text" name="department" value={profile.department || ""} onChange={handleChange} className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition" />
               </div>
               <div className="md:col-span-2">
-                <label className="text-sm font-medium text-gray-600">Profile Picture URL</label>
-                <input type="text" name="profilePic" value={profile.profilePic || ""} onChange={handleChange} className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition" />
+                <label className="text-sm font-medium text-gray-600">Branch Specialisation</label>
+                <select
+                  name="branchSpecialisation"
+                  value={profile.branchSpecialisation || "core"}
+                  onChange={handleChange}
+                  className="w-full mt-1 px-4 py-2 text-gray-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
+                  required
+                >
+                  <option value="core">core</option>
+                  <option value="ECE (CPS)">ECE (CPS)</option>
+                  <option value="ECE (DS)">ECE (DS)</option>
+                  <option value="ECE (VLSI)">ECE (VLSI)</option>
+                  <option value="ECE (EKE)">ECE (EKE)</option>
+                  <option value="ECE (MES)">ECE (MES)</option>
+                </select>
               </div>
               <div className="md:col-span-2">
                 <label className="text-sm font-medium text-gray-600">Skills (comma-separated)</label>

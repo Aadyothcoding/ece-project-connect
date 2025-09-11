@@ -6,7 +6,7 @@ import crypto from "crypto";
 
 export const signup = async (req, res) => {
   // Add 'regNo' to the destructuring
-  const { fullName, email, password, role, regNo, experience, description, researchPast } = req.body;
+  const { fullName, email, password, role, regNo, experience, description, researchPast, srmWebsite } = req.body;
 
   try {
     if (!fullName || !email || !password || !role) {
@@ -52,6 +52,7 @@ export const signup = async (req, res) => {
       experience,
       description,
       researchPast,
+      srmWebsite: role.toLowerCase() === 'teacher' ? srmWebsite : undefined,
       verificationToken: hashedToken,
       tokenExpires,
     });
@@ -65,6 +66,7 @@ export const signup = async (req, res) => {
         fullName: newUser.fullName,
         email: newUser.email,
         role: newUser.role,
+        srmWebsite: newUser.srmWebsite || "",
         message: "Account created. Please check your email to verify your account."
       });
     } catch (emailError) {
@@ -134,7 +136,7 @@ export const login = async (req, res) => {
       fullName: user.fullName,
       email: user.email,
       role: user.role,
-      profilePic: user.profilePic || null,
+      srmWebsite: user.srmWebsite || "",
     });
 
   } catch (error) {
@@ -156,29 +158,26 @@ export const logout = (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
   const { 
-    profilePic, 
     department, 
-    skills, 
-    resumeUrl, 
     experience, 
-    description, 
     researchPast, 
-    cgpa
+    cgpa,
+    srmWebsite,
+    branchSpecialisation
   } = req.body;
     
     const userId = req.user._id;
 
     const updatedFields = {};
-  if (profilePic) updatedFields.profilePic = profilePic;
-  if (department) updatedFields.department = department;
-  if (skills) updatedFields.skills = skills;
-  if (resumeUrl) updatedFields.resumeUrl = resumeUrl;
-  if (cgpa !== undefined) updatedFields.cgpa = cgpa;
-    
+    if (department) updatedFields.department = department;
+    if (cgpa !== undefined) updatedFields.cgpa = cgpa;
     if (req.user.role === 'teacher') {
-        if (experience) updatedFields.experience = experience;
-        if (description) updatedFields.description = description;
-        if (researchPast) updatedFields.researchPast = researchPast;
+      if (experience) updatedFields.experience = experience;
+      if (researchPast) updatedFields.researchPast = researchPast;
+      if (srmWebsite) updatedFields.srmWebsite = srmWebsite;
+    }
+    if (req.user.role === 'student') {
+      if (branchSpecialisation) updatedFields.branchSpecialisation = branchSpecialisation;
     }
 
     const updatedUser = await User.findByIdAndUpdate(

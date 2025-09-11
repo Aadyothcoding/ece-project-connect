@@ -1,3 +1,4 @@
+import { getTeacherProfile } from "../api";
 import React, { useEffect, useState, useCallback } from "react";
 import {
   getAllProjects,
@@ -269,6 +270,9 @@ const ApplyModal = ({ project, onClose, onApply }) => {
 };
 
 export default function StudentDashboard() {
+  const [teacherProfileModal, setTeacherProfileModal] = useState(null);
+  const [teacherProfileData, setTeacherProfileData] = useState(null);
+  const [teacherProfileLoading, setTeacherProfileLoading] = useState(false);
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [globalDeadline, setGlobalDeadline] = useState("");
@@ -302,7 +306,19 @@ export default function StudentDashboard() {
   }, []);
 
   useEffect(() => {
-  getCurrentUser()
+    if (teacherProfileModal) {
+      setTeacherProfileLoading(true);
+      getTeacherProfile(teacherProfileModal)
+        .then((res) => setTeacherProfileData(res.data))
+        .catch(() => setTeacherProfileData(null))
+        .finally(() => setTeacherProfileLoading(false));
+    } else {
+      setTeacherProfileData(null);
+    }
+  }, [teacherProfileModal]);
+
+  useEffect(() => {
+    getCurrentUser()
       .then((res) => {
         if (res.data.role !== "student") {
           navigate("/teacher-dashboard");
@@ -367,6 +383,31 @@ export default function StudentDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-100 text-gray-800">
+      {/* Teacher Profile Modal */}
+      {teacherProfileModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 md:p-8 shadow-xl max-w-md w-full border border-slate-200 text-gray-800">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-800">Teacher Profile</h2>
+              <button onClick={() => setTeacherProfileModal(null)} className="text-gray-500 hover:text-gray-800"><X size={28} /></button>
+            </div>
+            {teacherProfileLoading ? (
+              <div className="flex items-center justify-center py-8"><Loader className="animate-spin w-8 h-8 text-cyan-600" /></div>
+            ) : teacherProfileData ? (
+              <div className="space-y-3">
+                <p><strong>Name:</strong> {teacherProfileData.fullName || teacherProfileData.name}</p>
+                <p><strong>Email:</strong> {teacherProfileData.email}</p>
+                <p><strong>Department:</strong> {teacherProfileData.department}</p>
+                <p><strong>Years of Experience:</strong> {teacherProfileData.experience}</p>
+                <p><strong>Past Research:</strong> {teacherProfileData.researchPast}</p>
+                <p><strong>SRM Website:</strong> <a href={teacherProfileData.srmWebsite} target="_blank" rel="noopener noreferrer" className="text-cyan-700 underline">{teacherProfileData.srmWebsite}</a></p>
+              </div>
+            ) : (
+              <div className="text-red-600">Could not load teacher profile.</div>
+            )}
+          </div>
+        </div>
+      )}
       {user && (
         <div className="max-w-2xl mx-auto mt-6 mb-2 text-center">
           <span className="text-2xl font-bold text-cyan-700 drop-shadow">Welcome, {user.fullName || user.name || user.email}</span>
@@ -386,14 +427,12 @@ export default function StudentDashboard() {
           onApply={handleApplySuccess}
         />
       )}
-
       <div className="relative max-w-7xl mx-auto z-10 p-4 sm:p-6 lg:p-8">
         <Navbar
           user={user}
           handleLogout={handleLogout}
           notificationCount={invitations.length}
         />
-
         <div className="lg:flex lg:gap-8 mt-6">
           <aside className="w-full lg:w-64 mb-8 lg:mb-0 bg-white p-4 rounded-xl shadow-lg border border-slate-200 h-fit lg:sticky top-8">
             <h3 className="text-lg font-bold mb-4 text-gray-700">
@@ -416,7 +455,6 @@ export default function StudentDashboard() {
               ))}
             </div>
           </aside>
-
           <main className="flex-1">
             <div className="mb-6 flex items-center bg-white border border-slate-200 rounded-lg px-4 py-2 shadow-sm">
               <Search className="w-5 h-5 text-gray-400 mr-2" />
@@ -428,7 +466,6 @@ export default function StudentDashboard() {
                 className="w-full bg-transparent outline-none text-gray-700 placeholder-gray-400"
               />
             </div>
-
             <h2 className="text-2xl font-bold mb-6 flex items-center gap-3 text-gray-700">
               <BookOpen className="w-6 h-6 text-cyan-600" />
               Available Projects
@@ -451,28 +488,33 @@ export default function StudentDashboard() {
                         <strong>Faculty:</strong> {p.facultyName}
                       </p>
                       <p>
-                        <strong>Stream:</strong> {p.stream}
-                      </p>
-                      <p>
                         <strong>Domain:</strong> {p.domain}
                       </p>
                     </div>
                   </div>
-                  <button
-                    onClick={() => setSelectedProject(p)}
-                    disabled={appliedProjectIds.has(p._id)}
-                    className="mt-6 w-full flex items-center justify-center gap-2 py-3 px-4 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg shadow-md transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {appliedProjectIds.has(p._id) ? (
-                      <>
-                        <CheckCircle className="w-5 h-5" /> Applied
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-5 h-5" /> Apply Now
-                      </>
-                    )}
-                  </button>
+                  <div className="flex flex-col gap-2 mt-6">
+                    <button
+                      onClick={() => setSelectedProject(p)}
+                      disabled={appliedProjectIds.has(p._id)}
+                      className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg shadow-md transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {appliedProjectIds.has(p._id) ? (
+                        <>
+                          <CheckCircle className="w-5 h-5" /> Applied
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-5 h-5" /> Apply Now
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setTeacherProfileModal(p.teacherId?._id || p.teacherId)}
+                      className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-gray-100 hover:bg-cyan-100 text-cyan-700 font-semibold rounded-lg shadow-md transition-transform transform hover:scale-105"
+                    >
+                      <User className="w-5 h-5" /> View Teacher Profile
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

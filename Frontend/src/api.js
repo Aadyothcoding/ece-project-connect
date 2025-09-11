@@ -1,3 +1,5 @@
+// --- TEACHER INFO ROUTE ---
+export const getTeacherProfile = (teacherId) => API.get(`/info/teacher/${teacherId}`);
 // --- GLOBAL DEADLINE ---
 export const getGlobalDeadline = () => API.get("/global-deadline");
 export const setGlobalDeadline = (deadline) => API.post("/global-deadline", { deadline });
